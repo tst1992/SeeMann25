@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SSS Seemannschaft 25 Fragen</title>
+<meta name="description" content="Trainer für die 25 häufigsten Prüfungsfragen Seemannschaft des Sportseeschifferscheins.">
+<meta name="theme-color" content="#0A121C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SSS 25">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+/* ==========================================================================
+   SSS Seemannschaft 25 Fragen
+   Gestaltung übernommen aus dem SSS-Trainer Seemannschaft.
+   Farbwelt: Positionslichter bei Nacht. Backbordrot, Steuerbordgrün,
+   Topplichtweiss auf Nachtsee. Zahlen laufen im Monospace.
+   ========================================================================== */
+
+:root{
+  --sea-900:#0A121C;
+  --sea-850:#0E1927;
+  --sea-800:#132335;
+  --sea-700:#1B3149;
+  --line:#25405C;
+  --line-soft:#1A2C40;
+
+  --fog:#C6D3E0;
+  --fog-dim:#7E93A9;
+  --white-light:#F1F6FB;
+
+  --stbd:#3CC28C;         /* Steuerbord: richtig */
+  --stbd-dim:#16382C;
+  --port:#E8555E;         /* Backbord: falsch */
+  --port-dim:#3D1A20;
+  --brass:#D8A544;        /* teilweise, Hinweise */
+  --brass-dim:#3A2E14;
+
+  --r:14px;
+  --tap:44px;
+
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+}
+
+*{box-sizing:border-box}
+/* Muss vor allen display-Regeln stehen, sonst fangen ausgeblendete Overlays Klicks ab. */
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{
+  background:var(--sea-900);
+  color:var(--fog);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+  padding-bottom:env(safe-area-inset-bottom);
+  overflow-wrap:break-word;
+}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+.skiplink{position:absolute;left:-9999px;top:0;background:var(--brass);color:#1A1204;padding:10px 14px;z-index:60;border-radius:0 0 8px 0}
+.skiplink:focus{left:0}
+
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:6px}
+
+/* ---------- Kopfzeile ---------- */
+.top{position:sticky;top:0;z-index:30;background:var(--sea-900);padding-top:env(safe-area-inset-top)}
+.top-row{display:flex;align-items:center;gap:6px;padding:8px 10px;max-width:660px;margin:0 auto}
+.brand{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;padding-left:4px}
+.brand-name{font-size:.82rem;font-weight:650;letter-spacing:.10em;text-transform:uppercase;color:var(--white-light)}
+.crumb{font-size:.72rem;color:var(--fog-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Signatur: die drei Positionslichter als Horizontlinie */
+.horizon{display:flex;height:2px}
+.horizon i{flex:1}
+.horizon .port{background:linear-gradient(90deg,var(--port),rgba(232,85,94,.15))}
+.horizon .mast{background:rgba(241,246,251,.30);flex:.5}
+.horizon .stbd{background:linear-gradient(90deg,rgba(60,194,140,.15),var(--stbd))}
+
+.icon-btn{
+  min-width:var(--tap);min-height:var(--tap);
+  display:grid;place-items:center;
+  background:none;border:0;color:var(--fog-dim);cursor:pointer;border-radius:10px;padding:0;
+}
+.icon-btn:hover{color:var(--white-light);background:var(--sea-800)}
+.icon-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Layout ---------- */
+main{max-width:640px;margin:0 auto;padding:20px 16px 96px}
+.screen{animation:rise .28s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.h-display{
+  font-size:clamp(2rem,9vw,2.9rem);line-height:1.03;margin:8px 0 12px;
+  color:var(--white-light);font-weight:680;letter-spacing:-.025em;
+}
+.h-section{font-size:1.18rem;margin:0;color:var(--white-light);font-weight:640;letter-spacing:-.01em}
+.lede{color:var(--fog-dim);margin:0 0 26px;font-size:.95rem}
+.eyebrow{
+  font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--fog-dim);margin:0 0 10px;font-weight:640;
+}
+
+/* ---------- Auswahlkacheln ---------- */
+.choices{display:grid;gap:8px;margin-bottom:28px}
+.choices.row4{grid-template-columns:repeat(4,1fr)}
+.choice{
+  display:flex;flex-direction:column;gap:3px;text-align:left;
+  min-height:var(--tap);padding:13px 15px;
+  background:var(--sea-850);border:1px solid var(--line-soft);border-radius:var(--r);
+  color:var(--fog);cursor:pointer;font:inherit;transition:border-color .15s,background .15s;
+}
+.choices.row4 .choice{align-items:center;text-align:center;padding:14px 4px}
+.choice:hover{border-color:var(--line)}
+.choice[aria-checked="true"]{border-color:var(--stbd);background:var(--sea-800)}
+.choice-title{color:var(--white-light);font-weight:620;font-size:.98rem}
+.choices.row4 .choice-title{font-family:var(--mono);font-size:1.35rem;font-weight:600;line-height:1.1}
+.choice-sub{font-size:.8rem;color:var(--fog-dim);line-height:1.35}
+
+/* ---------- Knöpfe ---------- */
+.cta{
+  display:block;width:100%;min-height:52px;margin-top:8px;
+  background:var(--stbd);color:#04150E;border:0;border-radius:var(--r);
+  font:inherit;font-weight:680;font-size:1rem;cursor:pointer;transition:filter .15s,opacity .15s;
+}
+.cta:hover{filter:brightness(1.08)}
+.cta:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.ghost{
+  display:block;width:100%;min-height:var(--tap);margin-top:8px;
+  background:none;color:var(--fog-dim);border:1px solid var(--line-soft);border-radius:var(--r);
+  font:inherit;font-size:.92rem;cursor:pointer;
+}
+.ghost:hover{color:var(--white-light);border-color:var(--line)}
+.ghost:disabled{opacity:.45;cursor:not-allowed}
+.ghost:disabled:hover{color:var(--fog-dim);border-color:var(--line-soft)}
+.ghost.danger:hover{color:var(--port);border-color:var(--port)}
+.ghost.brass{color:var(--brass);border-color:rgba(216,165,68,.45)}
+.ghost.brass:hover{border-color:var(--brass);color:var(--brass)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.textlink{background:none;border:0;padding:6px 0;margin-top:14px;color:var(--fog-dim);font:inherit;font-size:.85rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.textlink:hover{color:var(--white-light)}
+
+/* ---------- Fortschrittsbalken der Runde ---------- */
+.meter{height:3px;background:var(--line-soft);border-radius:2px;overflow:hidden;margin-bottom:22px}
+.meter i{display:block;height:100%;background:var(--stbd);width:0;transition:width .3s ease}
+
+/* ---------- Fragekopf ---------- */
+.plate-label{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fog-dim);margin:0 0 8px;font-family:var(--mono)}
+.plate-label .wdh{color:var(--brass)}
+.q-name{font-size:clamp(1.3rem,5.2vw,1.65rem);line-height:1.25;color:var(--white-light);font-weight:640;margin:0;letter-spacing:-.015em}
+
+.answer-area{margin-top:22px}
+textarea#antwort{
+  width:100%;min-height:140px;padding:12px 14px;
+  background:var(--sea-900);border:1px solid var(--line);border-radius:10px;
+  color:var(--white-light);font:inherit;font-size:1rem;line-height:1.55;
+  resize:vertical;display:block;
+}
+textarea#antwort::placeholder{color:#5B6E82}
+textarea#antwort:focus{border-color:var(--stbd);outline:none}
+textarea#antwort[readonly]{border-color:var(--line-soft);color:var(--fog);cursor:default;min-height:0;resize:none;overflow:hidden}
+.kbd-hint{margin:6px 0 0;font-size:.74rem;color:#5B6E82;text-align:right}
+
+.hint-note{
+  display:flex;gap:10px;align-items:flex-start;
+  margin:10px 0 0;padding:10px 12px;border-radius:10px;
+  background:linear-gradient(var(--brass-dim),var(--sea-850));border:1px solid rgba(216,165,68,.4);
+  font-size:.9rem;color:var(--fog);
+}
+.hint-note b{color:var(--brass);font-weight:640;flex:none}
+
+/* ---------- Rückmeldung ---------- */
+.verdict{
+  display:flex;align-items:flex-start;gap:12px;
+  margin-top:18px;padding:14px 12px 14px 14px;
+  border:1px solid var(--line-soft);border-radius:var(--r);background:var(--sea-850);
+}
+.verdict.ok{border-color:var(--stbd);background:linear-gradient(var(--stbd-dim),var(--sea-850))}
+.verdict.no{border-color:var(--port);background:linear-gradient(var(--port-dim),var(--sea-850))}
+.verdict.skip{border-color:var(--brass);background:linear-gradient(var(--brass-dim),var(--sea-850))}
+/* Die Lampe ist Sektorlicht, nicht blosser Punkt */
+.lamp{width:14px;height:14px;border-radius:50%;flex:none;margin-top:4px;background:var(--fog-dim)}
+.verdict.ok .lamp{background:var(--stbd);box-shadow:0 0 0 4px rgba(60,194,140,.16)}
+.verdict.no .lamp{background:var(--port);box-shadow:0 0 0 4px rgba(232,85,94,.16)}
+.verdict.skip .lamp{background:var(--brass);box-shadow:0 0 0 4px rgba(216,165,68,.16)}
+.verdict-text{flex:1;min-width:0}
+.verdict-head{margin:0;font-weight:660;color:var(--white-light);font-size:1rem}
+.verdict-head:focus{outline:none}
+.verdict-sub{margin:3px 0 0;font-size:.88rem;color:var(--fog-dim)}
+.verdict-sub b{color:var(--fog);font-weight:620}
+
+.sub-eyebrow{margin-top:22px}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.chip{
+  font-size:.83rem;padding:5px 10px;border-radius:999px;
+  background:var(--sea-800);border:1px solid var(--line-soft);color:var(--fog);
+}
+.chip.hit{border-color:var(--stbd);color:var(--stbd);background:rgba(60,194,140,.08)}
+.chip.fehlt{opacity:.55}
+.chip i{font-style:normal;margin-right:5px}
+.chip .pf{font-family:var(--mono);color:var(--brass);margin-left:4px;font-size:.75rem}
+.chip.hit .pf{color:var(--stbd)}
+
+/* ---------- Musterlösung ---------- */
+.loesung{
+  background:var(--sea-850);border:1px solid var(--line-soft);border-left:3px solid var(--stbd);
+  border-radius:0 var(--r) var(--r) 0;padding:14px 16px;
+}
+.loesung p{margin:0;font-size:.95rem;color:var(--fog);line-height:1.6}
+.loesung ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.loesung li{font-size:.95rem;color:var(--fog);line-height:1.5}
+.loesung li::marker{color:var(--brass)}
+.anmerkung{margin:10px 0 0;font-size:.85rem;color:var(--brass);line-height:1.45}
+.anmerkung b{font-weight:640}
+
+/* ---------- Ergebnis ---------- */
+.score{font-size:clamp(2.8rem,14vw,3.8rem);line-height:1;color:var(--white-light);margin:10px 0 8px;font-weight:600}
+.tally{display:flex;align-items:baseline;gap:9px;margin:4px 0 6px;flex-wrap:wrap}
+.tally-num{font-family:var(--mono);font-size:1.5rem;color:var(--white-light);font-weight:600;line-height:1}
+.tally-pct{font-size:.9rem;color:var(--fog-dim)}
+.facts{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 26px}
+.fact{font-size:.8rem;padding:4px 10px;border-radius:999px;border:1px solid var(--line-soft);color:var(--fog-dim);background:var(--sea-850)}
+.fact b{font-family:var(--mono);color:var(--white-light);font-weight:600;margin-right:4px}
+
+.misslist{margin:6px 0 24px;display:grid;gap:6px}
+.miss{
+  display:flex;gap:12px;align-items:baseline;padding:11px 13px;width:100%;text-align:left;
+  background:var(--sea-850);border:0;border-left:3px solid var(--port);border-radius:0 10px 10px 0;
+  color:var(--fog);font:inherit;cursor:pointer;
+}
+.miss:hover{background:var(--sea-800)}
+.miss.later{border-left-color:var(--brass)}
+.miss b{font-family:var(--mono);color:var(--white-light);flex:none;font-weight:600;min-width:2ch;text-align:right}
+.miss span{font-size:.9rem;color:var(--fog);line-height:1.35;flex:1;min-width:0}
+.miss small{display:block;font-size:.74rem;color:var(--fog-dim);margin-top:2px}
+.miss.later small{color:var(--brass)}
+
+/* ---------- Fragenliste ---------- */
+input#suche{
+  width:100%;min-height:var(--tap);padding:12px 14px;
+  background:var(--sea-900);border:1px solid var(--line);border-radius:10px;
+  color:var(--white-light);font:inherit;font-size:1rem;
+}
+input#suche::placeholder{color:#5B6E82}
+input#suche:focus{border-color:var(--stbd);outline:none}
+.such-zahl{margin:12px 0 14px;font-size:.8rem;color:var(--fog-dim);font-family:var(--mono)}
+.such-zeile{
+  display:flex;gap:12px;align-items:baseline;text-align:left;width:100%;
+  margin-bottom:8px;padding:13px 15px;
+  background:var(--sea-850);border:1px solid var(--line-soft);border-radius:var(--r);
+  color:var(--fog);cursor:pointer;font:inherit;transition:border-color .15s;
+}
+.such-zeile:hover{border-color:var(--line)}
+.such-zeile b{font-family:var(--mono);color:var(--fog-dim);font-weight:600;flex:none;min-width:2ch;text-align:right;font-size:.85rem}
+.such-zeile span{color:var(--white-light);font-size:.94rem;line-height:1.35}
+
+/* ---------- Panels ---------- */
+.sheet-wrap{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet-scrim{position:absolute;inset:0;background:rgba(4,9,15,.7);animation:fade .2s ease both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{
+  position:relative;width:100%;max-width:640px;max-height:88vh;
+  background:var(--sea-850);border:1px solid var(--line-soft);border-bottom:0;
+  border-radius:20px 20px 0 0;display:flex;flex-direction:column;
+  animation:slide .26s cubic-bezier(.22,.9,.3,1) both;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+@keyframes slide{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
+.sheet-grab{height:22px;flex:none;cursor:pointer;display:grid;place-items:center;background:none;border:0;width:100%}
+.sheet-grab::after{content:"";width:38px;height:4px;border-radius:2px;background:var(--line)}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:6px 16px 12px;border-bottom:1px solid var(--line-soft)}
+.sheet-head .plate-label{margin-bottom:4px}
+.sheet-head .h-section{font-size:1.02rem;line-height:1.35}
+.sheet-body{padding:16px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.sheet-body .loesung{background:var(--sea-900)}
+.sheet-body .eyebrow{font-size:.68rem;color:var(--fog-dim);margin:4px 0 10px}
+.sheet-body .eyebrow.sub-eyebrow{margin-top:22px}
+.eigene{margin:0 0 20px;padding:12px 14px;border-radius:10px;border:1px dashed var(--line);background:var(--sea-900);font-size:.92rem;color:var(--fog);white-space:pre-wrap}
+.eigene.leer{color:var(--fog-dim);font-style:italic}
+
+.help-h{color:var(--white-light);font-size:.95rem;margin:22px 0 6px;font-weight:640}
+.help-h:first-child{margin-top:0}
+.sheet-body p{margin:0 0 10px;font-size:.92rem;color:var(--fog-dim)}
+.sheet-body p strong{color:var(--fog)}
+.sheet-body .loesung p{color:var(--fog);margin:0}
+.keyline{border:0;border-top:1px solid var(--line-soft);margin:20px 0}
+.sheet-actions{padding:4px 16px 18px}
+
+/* ---------- Hinweis unten ---------- */
+.toast{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  z-index:60;background:var(--sea-700);border:1px solid var(--line);color:var(--white-light);
+  padding:11px 17px;border-radius:999px;font-size:.88rem;animation:fade .2s ease both;max-width:92vw;text-align:center;
+}
+
+@media (min-width:520px){
+  .choices.row4 .choice{padding:16px 6px}
+}
+@media (max-width:359px){
+  .choices.row4{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<a class="skiplink" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="top">
+  <div class="top-row">
+    <button class="icon-btn" id="btn-zurueck" type="button" title="Zurück" aria-label="Zurück" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="brand">
+      <span class="brand-name">SSS Seemannschaft</span>
+      <span class="crumb" id="crumb">25 Fragen</span>
+    </span>
+    <button class="icon-btn" id="btn-liste" type="button" title="Alle Fragen" aria-label="Alle Fragen">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r=".6"/><circle cx="4.5" cy="12" r=".6"/><circle cx="4.5" cy="18" r=".6"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-info" type="button" title="Info" aria-label="Info">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>
+    </button>
+  </div>
+  <div class="horizon" aria-hidden="true"><i class="port"></i><i class="mast"></i><i class="stbd"></i></div>
+</header>
+
+<main id="inhalt">
+
+  <!-- ---------- Start ---------- -->
+  <section class="screen" id="screen-start">
+    <p class="eyebrow">Sportseeschifferschein · Seemannschaft</p>
+    <h1 class="h-display">25 Fragen üben</h1>
+    <p class="lede">Die 25 häufigsten Prüfungsfragen in zufälliger Reihenfolge. Antwort frei formulieren, prüfen lassen und mit der Musterlösung vergleichen. Falsche Antworten kommen später nochmals.</p>
+
+    <p class="eyebrow" id="groesse-label">Rundengrösse</p>
+    <div class="choices row4" id="groesse-choices" role="radiogroup" aria-labelledby="groesse-label"></div>
+
+    <button class="cta" id="btn-start" type="button">Runde starten</button>
+    <button class="ghost" id="btn-liste-2" type="button">Alle Fragen ansehen</button>
+    <button class="textlink" id="btn-info-2" type="button">So wird bewertet</button>
+  </section>
+
+  <!-- ---------- Frage ---------- -->
+  <section class="screen" id="screen-frage" hidden>
+    <div class="meter" role="progressbar" aria-label="Fortschritt der Runde" aria-valuemin="0" aria-valuemax="100" id="meter"><i id="meter-fill"></i></div>
+
+    <p class="plate-label" id="frage-label">Frage</p>
+    <h2 class="q-name" id="frage-text" tabindex="-1"></h2>
+
+    <div class="answer-area">
+      <label class="sr-only" for="antwort">Ihre Antwort</label>
+      <textarea id="antwort" rows="6" placeholder="Antwort frei formulieren. Stichworte genügen, Fachbegriffe zählen." autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
+      <p class="kbd-hint" id="kbd-hint">Strg + Enter prüft</p>
+      <p class="hint-note" id="hinweis-note" hidden><b>Hinweis</b><span id="hinweis-text"></span></p>
+
+      <div id="frage-aktionen">
+        <button class="cta" id="btn-pruefen" type="button" disabled>Prüfen</button>
+        <div class="btn-row">
+          <button class="ghost" id="btn-hinweis" type="button">Hinweis</button>
+          <button class="ghost" id="btn-loesen" type="button">Lösen</button>
+        </div>
+        <button class="ghost" id="btn-ueberspringen" type="button">Überspringen</button>
+      </div>
+    </div>
+
+    <!-- Auswertung -->
+    <div id="auswertung" hidden>
+      <div class="verdict" id="verdict" aria-live="polite">
+        <span class="lamp" aria-hidden="true"></span>
+        <span class="verdict-text">
+          <p class="verdict-head" id="verdict-head" tabindex="-1"></p>
+          <p class="verdict-sub" id="verdict-sub"></p>
+        </span>
+      </div>
+      <button class="ghost brass" id="btn-doch" type="button" hidden>Doch richtig</button>
+
+      <p class="eyebrow sub-eyebrow">Schlüsselelemente</p>
+      <div class="chips" id="element-chips"></div>
+
+      <p class="eyebrow sub-eyebrow">Musterlösung</p>
+      <div class="loesung" id="loesung-box"></div>
+      <p class="anmerkung" id="loesung-anmerkung" hidden></p>
+
+      <button class="cta" id="btn-weiter" type="button" style="margin-top:22px">Weiter</button>
+    </div>
+  </section>
+
+  <!-- ---------- Ergebnis ---------- -->
+  <section class="screen" id="screen-ergebnis" hidden>
+    <p class="eyebrow" id="ergebnis-eyebrow">Runde beendet</p>
+    <h2 class="h-section">Ergebnis</h2>
+    <p class="score mono" id="ergebnis-score">0 %</p>
+    <div class="tally">
+      <span class="tally-num" id="ergebnis-zahl">0/0</span>
+      <span class="tally-pct">beim ersten Versuch richtig</span>
+    </div>
+    <div class="facts" id="ergebnis-facts"></div>
+    <p class="eyebrow" id="miss-eyebrow" hidden>Noch einmal ansehen</p>
+    <div class="misslist" id="misslist"></div>
+    <button class="cta" id="btn-fehler" type="button">Fehler nochmals üben</button>
+    <button class="ghost" id="btn-neu" type="button">Neue Runde</button>
+    <button class="ghost" id="btn-zum-start" type="button">Zur Startseite</button>
+  </section>
+
+  <!-- ---------- Alle Fragen ---------- -->
+  <section class="screen" id="screen-liste" hidden>
+    <p class="eyebrow">Ohne Abfrage</p>
+    <h2 class="h-section">Alle Fragen</h2>
+    <p class="lede">Sucht in Fragen und Musterlösungen. Antippen zeigt die Lösung.</p>
+    <label class="sr-only" for="suche">Suchbegriff</label>
+    <input id="suche" type="search" placeholder="z. B. Treibanker, Lee, Brand" autocomplete="off">
+    <p class="such-zahl" id="such-zahl" aria-live="polite"></p>
+    <div id="such-treffer"></div>
+  </section>
+
+</main>
+
+<!-- ---------- Panel: Lösung ---------- -->
+<div class="sheet-wrap" id="sheet-loesung" hidden>
+  <div class="sheet-scrim" data-schliessen></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-loesung-titel">
+    <button class="sheet-grab" type="button" data-schliessen aria-label="Schliessen"></button>
+    <div class="sheet-head">
+      <div>
+        <p class="plate-label" id="sheet-loesung-nr">Frage</p>
+        <h3 class="h-section" id="sheet-loesung-titel"></h3>
+      </div>
+      <button class="icon-btn" type="button" data-schliessen aria-label="Schliessen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheet-loesung-body"></div>
+  </div>
+</div>
+
+<!-- ---------- Panel: Info ---------- -->
+<div class="sheet-wrap" id="sheet-info" hidden>
+  <div class="sheet-scrim" data-schliessen></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-info-titel">
+    <button class="sheet-grab" type="button" data-schliessen aria-label="Schliessen"></button>
+    <div class="sheet-head">
+      <div>
+        <p class="plate-label">Info</p>
+        <h3 class="h-section" id="sheet-info-titel">So funktioniert die App</h3>
+      </div>
+      <button class="icon-btn" type="button" data-schliessen aria-label="Schliessen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <p class="help-h">Bewertung</p>
+      <p>Jede Frage hat feste Schlüsselelemente. Die App sucht sie in Ihrer Antwort, auch in anderer Wortform, in zusammengesetzten Wörtern und mit kleinen Tippfehlern. Umlaute, ß und Gross- und Kleinschreibung spielen keine Rolle.</p>
+      <p><strong>Richtig</strong>: alle Pflichtpunkte (★) und genügend Elemente erkannt. <strong>Teilweise</strong>: mindestens die Hälfte. <strong>Falsch</strong>: weniger.</p>
+      <p>Die Automatik erkennt Begriffe, keine Begründungen. Wenn sie sich irrt, werten Sie die Antwort mit „Doch richtig“ selbst.</p>
+
+      <p class="help-h">Wiederholung</p>
+      <p>Falsch, teilweise, gelöst oder übersprungen: Die Frage kommt nach frühestens drei anderen Fragen wieder, höchstens zweimal. Danach bleibt sie offen und erscheint im Ergebnis.</p>
+
+      <p class="help-h">Tastatur</p>
+      <p>Strg + Enter (Mac: Cmd + Enter) prüft die Antwort und geht danach weiter.</p>
+
+      <hr class="keyline">
+      <p class="help-h">Als App installieren</p>
+      <p><strong>iPhone/iPad</strong>: in Safari Teilen → „Zum Home-Bildschirm“. <strong>Android</strong>: in Chrome Menü → „App installieren“. <strong>Desktop</strong>: Installations-Symbol in der Adresszeile.</p>
+      <p id="offline-status"></p>
+
+      <hr class="keyline">
+      <p class="help-h">Datengrundlage</p>
+      <p>„SSS Seemannschaft – 25 häufigsten Fragen“, © SegelnAG. Fragen und Musterlösungen sind wörtlich übernommen. Ausnahme: Frage 24 nennt bei blauen Abgasen verbranntes Motoröl statt „unverbrannter Treibstoff“. Zu Frage 13 steht eine Anmerkung zu den aktuellen Reanimationsleitlinien.</p>
+      <p>Kein Server, keine Anmeldung, keine Übertragung. Gespeichert wird nur die zuletzt gewählte Rundengrösse in diesem Browser.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- Panel: Runde beenden ---------- -->
+<div class="sheet-wrap" id="sheet-beenden" hidden>
+  <div class="sheet-scrim" data-schliessen></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-beenden-titel">
+    <button class="sheet-grab" type="button" data-schliessen aria-label="Schliessen"></button>
+    <div class="sheet-head">
+      <div>
+        <p class="plate-label">Runde</p>
+        <h3 class="h-section" id="sheet-beenden-titel">Runde beenden?</h3>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <p>Bisherige Antworten werden ausgewertet. Nicht gestellte Fragen zählen nicht mit.</p>
+      <button class="cta" id="btn-beenden-ja" type="button">Beenden und auswerten</button>
+      <button class="ghost" type="button" data-schliessen>Weiter üben</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script id="fragen-daten" type="application/json">
+[
+  {
+    "id": "f01",
+    "nummer": 1,
+    "frage": "Wie verhalten Sie sich bei einer Situation „Mensch über Bord“ unter Segeln?",
+    "loesung": [
+      "Sofort „Mensch über Bord“ rufen und ständig Sichtkontakt halten. Eine Person zeigt dauerhaft auf die über Bord gegangene Person. Rettungsmittel wie Rettungsring oder Leuchtboje werden ins Wasser geworfen. Es wird ein geeignetes Rettungsmanöver gefahren (z. B. Quick-Stop, Q-Wende oder Münchener Manöver). Der Motor wird gestartet, um die Manövrierfähigkeit zu erhöhen, anschließend erfolgt die Bergung über Lee."
+    ],
+    "hinweis": "Was tun Sie in den ersten Sekunden – und von welcher Seite wird geborgen?",
+    "mindestanzahl": 4,
+    "elemente": [
+      {
+        "label": "„Mensch über Bord“ rufen",
+        "pflicht": true,
+        "treffer": [
+          "mensch über bord",
+          "mann über bord",
+          "person über bord",
+          "=mob",
+          "rufen",
+          "=ruf",
+          "alarm",
+          "laut melden",
+          "schreien",
+          "crew informieren",
+          "crew warnen"
+        ]
+      },
+      {
+        "label": "Sichtkontakt halten, zeigen",
+        "pflicht": true,
+        "verneinend": true,
+        "treffer": [
+          "sichtkontakt",
+          "blickkontakt",
+          "sichtverbindung",
+          "sicht halten",
+          "im auge behalten",
+          "nicht aus den augen",
+          "zeigen",
+          "zeigt",
+          "deuten",
+          "ausguck",
+          "beobachten",
+          "fixieren",
+          "nicht verlieren"
+        ]
+      },
+      {
+        "label": "Rettungsmittel werfen",
+        "pflicht": true,
+        "treffer": [
+          "rettungsmittel",
+          "rettungsring",
+          "rettungsboje",
+          "leuchtboje",
+          "rettungskragen",
+          "hufeisen",
+          "boje",
+          "werfen",
+          "lifebuoy",
+          "lifesling",
+          "rettungsschlinge",
+          "danboje",
+          "dan buoy",
+          "rettungsinsel"
+        ]
+      },
+      {
+        "label": "Rettungsmanöver fahren",
+        "treffer": [
+          "quick stop",
+          "quickstop",
+          "=q wende",
+          "qwende",
+          "münchener",
+          "münchner",
+          "manöver",
+          "^wende",
+          "^halse",
+          "beidrehen",
+          "aufschießer",
+          "nahezu stoppen",
+          "zurücksegeln",
+          "zurückfahren",
+          "umkehren"
+        ]
+      },
+      {
+        "label": "Motor starten",
+        "treffer": [
+          "motor",
+          "maschine starten",
+          "maschine an"
+        ]
+      },
+      {
+        "label": "Bergung über Lee",
+        "treffer": [
+          "=lee",
+          "leeseite",
+          "^leeseit",
+          "in lee"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f02",
+    "nummer": 2,
+    "frage": "Welche Suchmuster können bei der Suche nach einer über Bord gegangenen Person angewendet werden?",
+    "loesung": [
+      "Es werden grundsätzlich zwei Sucharten unterschieden: Streckensuche und Raumsuche. Bei der Streckensuche wird der zurückgelegte Kurs in parallelen Suchstreifen abgefahren. Bei der Raumsuche wird ein vermutetes Gebiet mit parallelen Suchspuren systematisch abgesucht."
+    ],
+    "hinweis": "Zwei Arten: entlang des Kurses oder in einem Gebiet.",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Streckensuche",
+        "pflicht": true,
+        "treffer": [
+          "streckensuche",
+          "strecke",
+          "zurückgelegten kurs",
+          "zurückgelegte kurs",
+          "kurs zurück",
+          "entlang des kurses",
+          "kurslinie",
+          "spursuche",
+          "track"
+        ]
+      },
+      {
+        "label": "Raumsuche",
+        "pflicht": true,
+        "treffer": [
+          "raumsuche",
+          "flächensuche",
+          "gebietssuche",
+          "suchgebiet",
+          "gebiet",
+          "fläche",
+          "quadratsuche",
+          "expanding square",
+          "sektorsuche",
+          "spiralsuche"
+        ]
+      },
+      {
+        "label": "Parallele Suchstreifen",
+        "treffer": [
+          "parallel",
+          "suchstreifen",
+          "suchspur",
+          "streifen",
+          "mäander"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f03",
+    "nummer": 3,
+    "frage": "Was versteht man unter „Beiliegen“ bei schwerem Wetter?",
+    "loesung": [
+      "Beim Beiliegen wird das Schiff so getrimmt, dass es mit geringer Fahrt schräg zum Wind liegt. Das Schiff driftet langsam nach Lee und die Wellen laufen meist schräg von vorn ein. Diese Methode reduziert die Belastung für Schiff und Crew."
+    ],
+    "hinweis": "Fast gestoppt, aber nicht ganz – wie liegt das Schiff zum Wind?",
+    "mindestanzahl": 3,
+    "elemente": [
+      {
+        "label": "Geringe Fahrt",
+        "pflicht": true,
+        "treffer": [
+          "geringe fahrt",
+          "geringer fahrt",
+          "wenig fahrt",
+          "kaum fahrt",
+          "minimale fahrt",
+          "^langsam fahrt",
+          "fahrt reduzieren",
+          "fahrt rausnehmen",
+          "gestoppt",
+          "fast stehen",
+          "nahezu stillstand",
+          "beigedreht",
+          "beidrehen",
+          "=back",
+          "backstehend",
+          "^backgestellt",
+          "^backsetz",
+          "^backgesetzt"
+        ]
+      },
+      {
+        "label": "Schräg zum Wind",
+        "pflicht": true,
+        "treffer": [
+          "schräg",
+          "=am wind",
+          "winkel zum wind",
+          "zum wind",
+          "gegen den wind"
+        ]
+      },
+      {
+        "label": "Langsame Drift nach Lee",
+        "treffer": [
+          "driftet",
+          "drift",
+          "treibt",
+          "versetzt",
+          "vertreiben",
+          "nach lee"
+        ]
+      },
+      {
+        "label": "Weniger Belastung für Schiff und Crew",
+        "treffer": [
+          "belastung",
+          "entlast",
+          "schont",
+          "schonen",
+          "ruhiger",
+          "^ruhig",
+          "erholung",
+          "ausruhen",
+          "pause",
+          "komfort",
+          "sicherer"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f04",
+    "nummer": 4,
+    "frage": "Was bedeutet „Ablaufen vor Topp und Takel“?",
+    "loesung": [
+      "Das Schiff läuft ohne gesetzte Segel vor dem Wind ab. Diese Maßnahme wird angewendet, wenn der Sturm so stark ist, dass keine Segel mehr sicher geführt werden können."
+    ],
+    "hinweis": "Nur Mast und Rigg bleiben übrig.",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Ohne Segel",
+        "pflicht": true,
+        "treffer": [
+          "ohne segel",
+          "ohne besegelung",
+          "keine segel",
+          "segel geborgen",
+          "segel bergen",
+          "segel runter",
+          "segel eingeholt",
+          "segel weg",
+          "blanker mast",
+          "blankem mast",
+          "nackter mast",
+          "nur mast",
+          "ohne tuch",
+          "segelfrei"
+        ]
+      },
+      {
+        "label": "Vor dem Wind",
+        "pflicht": true,
+        "treffer": [
+          "vor dem wind",
+          "vorm wind",
+          "vor den wind",
+          "mit dem wind",
+          "raumschots",
+          "wind von achtern",
+          "wind von hinten",
+          "vor wind",
+          "platt vor"
+        ]
+      },
+      {
+        "label": "Sturm zu stark für Segel",
+        "treffer": [
+          "sturm",
+          "orkan",
+          "zu viel wind",
+          "zu stark",
+          "schwerwetter",
+          "schweres wetter",
+          "starkwind",
+          "nicht mehr sicher",
+          "windstärke"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f05",
+    "nummer": 5,
+    "frage": "Welche Funktion hat ein Treibanker?",
+    "loesung": [
+      "Ein Treibanker reduziert die Driftgeschwindigkeit und stabilisiert das Schiff im Seegang. Dadurch wird verhindert, dass das Schiff quer zur See schlägt."
+    ],
+    "hinweis": "Denken Sie an einen Fallschirm – nur im Wasser.",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Verringert die Drift",
+        "pflicht": true,
+        "treffer": [
+          "drift",
+          "brems",
+          "verlangsamt",
+          "langsamer",
+          "fahrt reduzieren",
+          "geschwindigkeit reduzieren",
+          "geschwindigkeit verringern",
+          "verringert die fahrt",
+          "weniger fahrt",
+          "vertreiben"
+        ]
+      },
+      {
+        "label": "Stabilisiert im Seegang",
+        "treffer": [
+          "stabil",
+          "ruhiger",
+          "hält den bug",
+          "bug im wind",
+          "bug gegen",
+          "bug zur see",
+          "heck zur see",
+          "auf kurs halten",
+          "ausrichten",
+          "richtet",
+          "in den wind",
+          "gegen die see",
+          "steuerfähig"
+        ]
+      },
+      {
+        "label": "Verhindert Querschlagen",
+        "treffer": [
+          "querschlag",
+          "^quer",
+          "broaching",
+          "dwarssee",
+          "breitseit",
+          "kentern",
+          "sonnenschuss",
+          "aus dem ruder"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f06",
+    "nummer": 6,
+    "frage": "Welche Gefahren bestehen bei einer Leeküste?",
+    "loesung": [
+      "Bei auflandigem Wind wird das Schiff zur Küste getrieben. Wenn ein Freikreuzen nicht mehr möglich ist, droht Strandung (Legerwall)."
+    ],
+    "hinweis": "Woher kommt der Wind – und wohin treibt das Schiff?",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Auflandiger Wind treibt zur Küste",
+        "pflicht": true,
+        "treffer": [
+          "^aufland",
+          "zur küste",
+          "an die küste",
+          "auf die küste",
+          "gegen die küste",
+          "richtung küste",
+          "richtung land",
+          "an land",
+          "aufs land",
+          "landwärts",
+          "wind weht auf"
+        ]
+      },
+      {
+        "label": "Freikreuzen nicht mehr möglich",
+        "verneinend": true,
+        "treffer": [
+          "freikreuzen",
+          "kreuzen",
+          "freisegeln",
+          "kein raum",
+          "kein seeraum",
+          "kein platz",
+          "seeraum",
+          "manövrierraum",
+          "wegkommen",
+          "abhalten",
+          "ausweichen",
+          "entkommen"
+        ]
+      },
+      {
+        "label": "Strandung (Legerwall)",
+        "pflicht": true,
+        "treffer": [
+          "strand",
+          "legerwall",
+          "auflaufen",
+          "läuft auf",
+          "auf grund",
+          "grundberührung",
+          "aufsetzen",
+          "schiffbruch",
+          "felsen",
+          "riff",
+          "brandung"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f07",
+    "nummer": 7,
+    "frage": "Was versteht man unter der Stabilität eines Schiffes?",
+    "loesung": [
+      "Stabilität ist die Fähigkeit eines Schiffes, nach einer Krängung wieder in seine aufrechte Schwimmlage zurückzukehren. Sie ergibt sich aus dem Zusammenspiel von Gewichtskraft und Auftriebskraft."
+    ],
+    "hinweis": "Stehaufmännchen: Welche zwei Kräfte wirken?",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Aufrichten nach Krängung",
+        "pflicht": true,
+        "treffer": [
+          "aufricht",
+          "aufzuricht",
+          "aufrecht",
+          "zurückkehren",
+          "zurückzukehren",
+          "zurück in die",
+          "ausgangslage",
+          "rückstell",
+          "zurückdrehen",
+          "wieder gerade",
+          "krängung ausgleichen",
+          "widerstand gegen krängung"
+        ]
+      },
+      {
+        "label": "Gewichtskraft und Auftriebskraft",
+        "treffer": [
+          "gewicht",
+          "auftrieb",
+          "schwerpunkt",
+          "metazentrum",
+          "hebelarm",
+          "^kiel",
+          "ballast",
+          "schwerkraft",
+          "verdrängung"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f08",
+    "nummer": 8,
+    "frage": "Was ist der Stabilitätsumfang einer Yacht?",
+    "loesung": [
+      "Der Stabilitätsumfang ist der Bereich zwischen aufrechter Schwimmlage und dem Kenterpunkt. Bei seegängigen Yachten liegt er meist zwischen 100° und 140° Krängung."
+    ],
+    "hinweis": "Von aufrecht bis zu welchem Punkt?",
+    "mindestanzahl": 1,
+    "elemente": [
+      {
+        "label": "Bereich bis zum Kenterpunkt",
+        "pflicht": true,
+        "treffer": [
+          "^kenter",
+          "durchkentern",
+          "stabilitätsgrenze",
+          "nicht mehr aufrichtet",
+          "nicht mehr aufrichten",
+          "kein aufrichtendes moment",
+          "=avs",
+          "kipppunkt",
+          "kippt"
+        ]
+      },
+      {
+        "label": "Meist 100° bis 140°",
+        "treffer": [
+          "#100-150"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f09",
+    "nummer": 9,
+    "frage": "Welche Auswirkungen hat Vereisung auf die Stabilität eines Schiffes?",
+    "loesung": [
+      "Eis erhöht das Gewicht über Deck und verlagert den Schwerpunkt nach oben. Dadurch verringert sich die Stabilität, zusätzlich kann eine Schlagseite entstehen."
+    ],
+    "hinweis": "Wo sitzt das zusätzliche Gewicht?",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Mehr Gewicht über Deck",
+        "treffer": [
+          "gewicht",
+          "schwerer",
+          "^last",
+          "eislast",
+          "masse",
+          "über deck",
+          "toplastig",
+          "topplastig",
+          "kopflastig"
+        ]
+      },
+      {
+        "label": "Schwerpunkt steigt",
+        "pflicht": true,
+        "treffer": [
+          "schwerpunkt",
+          "toplastig",
+          "topplastig",
+          "kopflastig"
+        ]
+      },
+      {
+        "label": "Stabilität sinkt",
+        "treffer": [
+          "stabil",
+          "^kenter",
+          "aufrichtendes moment",
+          "hebelarm",
+          "^kipp"
+        ]
+      },
+      {
+        "label": "Schlagseite",
+        "treffer": [
+          "schlagseite",
+          "krängung",
+          "krängt",
+          "einseitig",
+          "schief",
+          "neigung",
+          "ungleich",
+          "seitenlage"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f10",
+    "nummer": 10,
+    "frage": "Welche Maßnahmen sind bei einem Brand an Bord zu ergreifen?",
+    "loesung": [
+      "Zunächst Ruhe bewahren und die Brandquelle lokalisieren. Der Brand wird mit Feuerlöscher oder Löschdecke bekämpft. Gleichzeitig sollte die Luftzufuhr möglichst reduziert werden."
+    ],
+    "hinweis": "Finden, bekämpfen – und was braucht ein Feuer?",
+    "mindestanzahl": 3,
+    "elemente": [
+      {
+        "label": "Ruhe bewahren",
+        "verneinend": true,
+        "treffer": [
+          "^ruhe",
+          "^ruhig",
+          "panik",
+          "besonnen",
+          "überlegt"
+        ]
+      },
+      {
+        "label": "Brandquelle lokalisieren",
+        "treffer": [
+          "brandquelle",
+          "brandherd",
+          "lokalisieren",
+          "feuerquelle",
+          "quelle",
+          "ursache",
+          "herd finden",
+          "orten",
+          "wo es brennt"
+        ]
+      },
+      {
+        "label": "Mit Feuerlöscher oder Löschdecke bekämpfen",
+        "pflicht": true,
+        "treffer": [
+          "löscher",
+          "löschdecke",
+          "löschen",
+          "lösch",
+          "bekämpf",
+          "=co2",
+          "pulver",
+          "schaum",
+          "wasser"
+        ]
+      },
+      {
+        "label": "Luftzufuhr reduzieren",
+        "treffer": [
+          "^luft",
+          "sauerstoff",
+          "luken schließen",
+          "luke schließen",
+          "luken zu",
+          "luke zu",
+          "türen schließen",
+          "tür schließen",
+          "tür zu",
+          "lüftung",
+          "abdecken",
+          "ersticken",
+          "abschotten",
+          "schotten dicht",
+          "zugluft"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f11",
+    "nummer": 11,
+    "frage": "Warum sind Kunststoffbrände besonders gefährlich?",
+    "loesung": [
+      "Beim Verbrennen von Kunststoffen entstehen hochgiftige Gase, die bereits in kleinen Mengen lebensgefährlich sein können."
+    ],
+    "hinweis": "Denken Sie an den Rauch.",
+    "mindestanzahl": 1,
+    "elemente": [
+      {
+        "label": "Hochgiftige Gase und Dämpfe",
+        "pflicht": true,
+        "treffer": [
+          "giftig",
+          "^gift",
+          "toxisch",
+          "dämpfe",
+          "=gas",
+          "^gase",
+          "blausäure",
+          "dioxin",
+          "salzsäure",
+          "rauchgas",
+          "vergiftung",
+          "chlorgas",
+          "kohlenmonoxid",
+          "=co"
+        ]
+      },
+      {
+        "label": "Schon kleine Mengen lebensgefährlich",
+        "treffer": [
+          "lebensgefährlich",
+          "tödlich",
+          "=tod",
+          "kleine mengen",
+          "kleinen mengen",
+          "geringe mengen",
+          "geringen mengen",
+          "wenige atemzüge",
+          "bewusstlos",
+          "ersticken"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f12",
+    "nummer": 12,
+    "frage": "Welche Maßnahmen sind bei einem Kabelbrand zu ergreifen?",
+    "loesung": [
+      "Die elektrische Anlage abschalten, insbesondere den Batteriehauptschalter. Anschließend den Brand mit Feuerlöscher oder Löschdecke bekämpfen."
+    ],
+    "hinweis": "Was muss geschehen, bevor gelöscht wird?",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Strom abschalten (Batteriehauptschalter)",
+        "pflicht": true,
+        "treffer": [
+          "abschalten",
+          "ausschalten",
+          "abstellen",
+          "strom aus",
+          "strom ab",
+          "stromlos",
+          "spannungsfrei",
+          "hauptschalter",
+          "batterie trennen",
+          "batterie abklemmen",
+          "abklemmen",
+          "sicherung",
+          "stromzufuhr",
+          "strom unterbrechen",
+          "freischalten",
+          "trennen"
+        ]
+      },
+      {
+        "label": "Mit Feuerlöscher oder Löschdecke bekämpfen",
+        "treffer": [
+          "löscher",
+          "löschdecke",
+          "löschen",
+          "lösch",
+          "bekämpf",
+          "=co2",
+          "pulver",
+          "ersticken"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f13",
+    "nummer": 13,
+    "frage": "Was versteht man unter der ABC-Regel der Wiederbelebung?",
+    "loesung": [
+      "A – Airway: Atemwege freimachen",
+      "B – Breathing: Atmung prüfen bzw. Beatmung durchführen",
+      "C – Circulation: Herzdruckmassage zur Aufrechterhaltung des Kreislaufs"
+    ],
+    "anmerkung": "Aktuelle Reanimationsleitlinien beginnen bei Erwachsenen mit der Herzdruckmassage. Für die Prüfung gilt die abgedruckte ABC-Musterlösung.",
+    "hinweis": "Drei englische Begriffe: A, B und C.",
+    "mindestanzahl": 3,
+    "elemente": [
+      {
+        "label": "A – Atemwege freimachen",
+        "pflicht": true,
+        "treffer": [
+          "airway",
+          "atemweg",
+          "freimachen",
+          "frei machen",
+          "freilegen",
+          "mund ausräumen",
+          "überstrecken",
+          "fremdkörper",
+          "luftweg"
+        ]
+      },
+      {
+        "label": "B – Atmung prüfen, beatmen",
+        "pflicht": true,
+        "treffer": [
+          "breathing",
+          "atmung",
+          "beatm",
+          "atmen",
+          "mund zu mund",
+          "mund zu nase",
+          "atemspende",
+          "atemkontrolle"
+        ]
+      },
+      {
+        "label": "C – Herzdruckmassage, Kreislauf",
+        "pflicht": true,
+        "treffer": [
+          "circulation",
+          "herzdruck",
+          "herzmassage",
+          "druckmassage",
+          "kreislauf",
+          "kompression",
+          "herz lungen",
+          "reanimation"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f14",
+    "nummer": 14,
+    "frage": "Was versteht man unter Seetüchtigkeit eines Schiffes?",
+    "loesung": [
+      "Ein Schiff ist seetüchtig, wenn es technisch einwandfrei, ausgerüstet, bemannbar und für die geplante Reise geeignet ist."
+    ],
+    "hinweis": "Vier Bereiche: Schiff, Material, Menschen, Vorhaben.",
+    "mindestanzahl": 3,
+    "elemente": [
+      {
+        "label": "Technisch einwandfrei",
+        "treffer": [
+          "technisch",
+          "einwandfrei",
+          "intakt",
+          "funktionstüchtig",
+          "funktionsfähig",
+          "zustand",
+          "dicht",
+          "konstruktion",
+          "bauweise",
+          "wartung",
+          "gewartet"
+        ]
+      },
+      {
+        "label": "Ausreichend ausgerüstet",
+        "treffer": [
+          "ausgerüstet",
+          "ausrüstung",
+          "ausstattung",
+          "ausgestattet",
+          "rettungsmittel",
+          "sicherheitsausrüstung"
+        ]
+      },
+      {
+        "label": "Ausreichend bemannt",
+        "treffer": [
+          "bemann",
+          "besatzung",
+          "=crew",
+          "mannschaft",
+          "personal",
+          "skipper",
+          "schiffsführer",
+          "qualifiziert",
+          "befähigt"
+        ]
+      },
+      {
+        "label": "Für die geplante Reise geeignet",
+        "treffer": [
+          "geeignet",
+          "reise",
+          "fahrtgebiet",
+          "revier",
+          "^törn",
+          "vorhaben",
+          "einsatzzweck",
+          "einsatzgebiet",
+          "seegebiet",
+          "zweck"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f15",
+    "nummer": 15,
+    "frage": "Wer ist für die Seetüchtigkeit verantwortlich?",
+    "loesung": [
+      "In erster Linie der Schiffsführer, unter Umständen auch Eigner oder Vercharterer."
+    ],
+    "hinweis": "Wer hat an Bord das Sagen?",
+    "mindestanzahl": 1,
+    "elemente": [
+      {
+        "label": "Schiffsführer",
+        "pflicht": true,
+        "treffer": [
+          "schiffsführer",
+          "=führer",
+          "fahrzeugführer",
+          "bootsführer",
+          "skipper",
+          "kapitän",
+          "kommandant",
+          "captain",
+          "käpt'n",
+          "kaptn"
+        ]
+      },
+      {
+        "label": "Unter Umständen Eigner oder Vercharterer",
+        "treffer": [
+          "eigner",
+          "eigentümer",
+          "charter",
+          "vermieter",
+          "halter",
+          "reeder",
+          "besitzer"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f16",
+    "nummer": 16,
+    "frage": "Welche Organisation übernimmt in Deutschland den maritimen Such- und Rettungsdienst?",
+    "loesung": [
+      "Die Deutsche Gesellschaft zur Rettung Schiffbrüchiger (DGzRS)."
+    ],
+    "hinweis": "Eine Abkürzung mit fünf Buchstaben, beginnend mit D.",
+    "mindestanzahl": 1,
+    "elemente": [
+      {
+        "label": "DGzRS",
+        "pflicht": true,
+        "treffer": [
+          "dgzrs",
+          "^dgzr",
+          "^dgrs",
+          "rettung schiffbrüchiger",
+          "gesellschaft zur rettung",
+          "~seenotretter",
+          "~seenotrettern"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f17",
+    "nummer": 17,
+    "frage": "Wo befindet sich der Sitz der DGzRS?",
+    "loesung": [
+      "Der Sitz der Organisation befindet sich in Bremen."
+    ],
+    "hinweis": "Eine Hansestadt an der Weser.",
+    "mindestanzahl": 1,
+    "elemente": [
+      {
+        "label": "Bremen",
+        "pflicht": true,
+        "treffer": [
+          "~bremen"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f18",
+    "nummer": 18,
+    "frage": "Welche Aufgaben hat der On Scene Coordinator (OSC)?",
+    "loesung": [
+      "Der OSC koordiniert die Such- und Rettungsmaßnahmen vor Ort und organisiert den Einsatz der beteiligten Schiffe und Flugzeuge."
+    ],
+    "hinweis": "„On Scene“ heisst: am Einsatzort.",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Koordiniert Suche und Rettung vor Ort",
+        "pflicht": true,
+        "treffer": [
+          "koordin",
+          "leitet",
+          "leitung",
+          "einsatzleit",
+          "=vor ort",
+          "am einsatzort",
+          "steuert",
+          "kommando",
+          "führt den einsatz"
+        ]
+      },
+      {
+        "label": "Organisiert beteiligte Schiffe und Flugzeuge",
+        "treffer": [
+          "schiffe",
+          "flugzeug",
+          "einheiten",
+          "hubschrauber",
+          "helikopter",
+          "luftfahrzeug",
+          "rettungskreuzer",
+          "beteiligten",
+          "fahrzeuge",
+          "kräfte",
+          "boote",
+          "ressourcen",
+          "einteilen",
+          "zuweisen",
+          "verteilt",
+          "organisiert"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f19",
+    "nummer": 19,
+    "frage": "Welche Mindestausrüstung zur Personenrettung sollte auf einer Yacht vorhanden sein?",
+    "loesung": [
+      "Zur Mindestausstattung gehören Rettungswesten, eine selbstzündende Leuchtboje und eine Wurfleine."
+    ],
+    "hinweis": "Etwas für jeden, etwas zum Markieren, etwas zum Heranziehen.",
+    "mindestanzahl": 3,
+    "elemente": [
+      {
+        "label": "Rettungswesten",
+        "pflicht": true,
+        "treffer": [
+          "weste",
+          "lifejacket",
+          "life jacket"
+        ]
+      },
+      {
+        "label": "Selbstzündende Leuchtboje",
+        "pflicht": true,
+        "treffer": [
+          "leuchtboje",
+          "boje",
+          "rettungsring",
+          "hufeisen",
+          "rettungskragen",
+          "licht",
+          "lifebuoy",
+          "danboje",
+          "dan buoy",
+          "rettungstorpedo",
+          "markierung"
+        ]
+      },
+      {
+        "label": "Wurfleine",
+        "pflicht": true,
+        "treffer": [
+          "leine",
+          "wurfsack",
+          "rettungsschlinge",
+          "lifesling",
+          "^tampen",
+          "=seil",
+          "=tau"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f20",
+    "nummer": 20,
+    "frage": "Welche Lenzsysteme sollten auf einer Yacht vorhanden sein?",
+    "loesung": [
+      "Mindestens zwei unabhängige Systeme, zum Beispiel eine manuelle Kolbenpumpe und eine elektrische Kreiselpumpe."
+    ],
+    "hinweis": "Eine braucht Muskelkraft, die andere nicht.",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Manuelle Pumpe (z. B. Kolbenpumpe)",
+        "pflicht": true,
+        "treffer": [
+          "manuell",
+          "^handp",
+          "^handl",
+          "^handbetr",
+          "=hand",
+          "kolbenpumpe",
+          "membranpumpe",
+          "pütz",
+          "eimer",
+          "muskelkraft",
+          "mechanisch"
+        ]
+      },
+      {
+        "label": "Elektrische Pumpe (z. B. Kreiselpumpe)",
+        "pflicht": true,
+        "treffer": [
+          "elektr",
+          "kreiselpumpe",
+          "=e pumpe",
+          "tauchpumpe",
+          "strom",
+          "motorpumpe",
+          "motorgetrieben",
+          "maschinengetrieben",
+          "automatisch"
+        ]
+      },
+      {
+        "label": "Zwei unabhängige Systeme",
+        "treffer": [
+          "^zwei",
+          "=2",
+          "unabhängig",
+          "redundan"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f21",
+    "nummer": 21,
+    "frage": "Was versteht man unter dem Lateralplan eines Schiffes?",
+    "loesung": [
+      "Der Lateralplan ist die seitliche Projektion der Unterwasserflächen eines Schiffes."
+    ],
+    "hinweis": "Das Schiff von der Seite – aber nur ein Teil davon.",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Seitliche Projektion",
+        "pflicht": true,
+        "treffer": [
+          "seitlich",
+          "projektion",
+          "seitenansicht",
+          "von der seite",
+          "seitenfläche",
+          "profil",
+          "längsschnitt",
+          "silhouette",
+          "seitenriss"
+        ]
+      },
+      {
+        "label": "Der Unterwasserflächen",
+        "pflicht": true,
+        "treffer": [
+          "unterwasser",
+          "unter wasser",
+          "unter der wasserlinie",
+          "unterhalb der wasserlinie",
+          "wasserlinie",
+          "eingetaucht",
+          "^kiel"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f22",
+    "nummer": 22,
+    "frage": "Welche Gefahren bestehen in der Nähe großer Schiffe?",
+    "loesung": [
+      "Gefahren entstehen durch Sichtbehinderung, Heck-Ausschwenken bei Kursänderungen sowie starken Wellenschlag."
+    ],
+    "hinweis": "Denken Sie an Sicht, Drehen und Wasserbewegung.",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Sichtbehinderung, toter Winkel",
+        "verneinend": true,
+        "treffer": [
+          "^sicht",
+          "toter winkel",
+          "toten winkel",
+          "nicht gesehen",
+          "übersehen",
+          "sieht nicht",
+          "nicht sehen",
+          "schlechte sicht",
+          "radarschatten"
+        ]
+      },
+      {
+        "label": "Heck schwenkt bei Kursänderung aus",
+        "treffer": [
+          "=heck",
+          "=hecks",
+          "ausschwenk",
+          "schwenkt aus",
+          "ausscher",
+          "drehkreis",
+          "kursänderung",
+          "wendekreis",
+          "bremsweg",
+          "stoppstrecke"
+        ]
+      },
+      {
+        "label": "Starker Wellenschlag, Sog",
+        "treffer": [
+          "welle",
+          "schraubenwasser",
+          "=sog",
+          "sogwirkung",
+          "propellerwasser",
+          "verwirbelung",
+          "wirbel",
+          "ansaugen",
+          "hecksee",
+          "schwell"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f23",
+    "nummer": 23,
+    "frage": "Welche Kontrollen sind vor dem Start eines Dieselmotors durchzuführen?",
+    "loesung": [
+      "Zu prüfen sind Ölstand, Kühlwasser, Batterieschaltung, Gangstellung neutral sowie dass sich kein Tampen in der Schraube befindet."
+    ],
+    "hinweis": "Fünf Punkte: von der Ölwanne bis zur Schraube.",
+    "mindestanzahl": 4,
+    "elemente": [
+      {
+        "label": "Ölstand",
+        "treffer": [
+          "^öl",
+          "motoröl",
+          "messstab",
+          "schmieröl"
+        ]
+      },
+      {
+        "label": "Kühlwasser",
+        "treffer": [
+          "kühl",
+          "seeventil",
+          "seewasser",
+          "impeller",
+          "borddurchlass"
+        ]
+      },
+      {
+        "label": "Batterieschaltung",
+        "treffer": [
+          "batterie",
+          "hauptschalter",
+          "zündung",
+          "spannung",
+          "=strom"
+        ]
+      },
+      {
+        "label": "Gang in Neutralstellung",
+        "treffer": [
+          "neutral",
+          "leerlauf",
+          "gang raus",
+          "kein gang",
+          "ausgekuppelt",
+          "auskuppeln",
+          "getriebe",
+          "schalthebel",
+          "gashebel",
+          "ganghebel",
+          "nullstellung",
+          "gangstellung"
+        ]
+      },
+      {
+        "label": "Kein Tampen in der Schraube",
+        "verneinend": true,
+        "treffer": [
+          "^tampen",
+          "leine",
+          "schraube",
+          "propeller",
+          "fremdkörper",
+          "tauwerk",
+          "festmacher"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f24",
+    "nummer": 24,
+    "frage": "Was sagt die Farbe der Abgase eines Dieselmotors aus?",
+    "loesung": [
+      "Weiße Abgase: Wasserdampf oder Wasser im Treibstoff",
+      "Blaue Abgase: verbranntes Motoröl",
+      "Schwarze Abgase: unvollständige Verbrennung"
+    ],
+    "anmerkung": "Korrigiert: In der PDF-Vorlage steht bei blauen Abgasen „unverbrannter Treibstoff“. Blauer Rauch zeigt verbranntes Motoröl an.",
+    "hinweis": "Drei Farben: weiss, blau und schwarz.",
+    "mindestanzahl": 3,
+    "elemente": [
+      {
+        "label": "Weiss: Wasserdampf oder Wasser im Treibstoff",
+        "farbe": [
+          "^weiss",
+          "^weis",
+          "^white"
+        ],
+        "treffer": [
+          "wasser",
+          "dampf",
+          "feuchtigkeit",
+          "kondens",
+          "zylinderkopfdichtung",
+          "kaltstart",
+          "=kalt"
+        ]
+      },
+      {
+        "label": "Blau: verbranntes Motoröl",
+        "farbe": [
+          "^blau",
+          "^blue"
+        ],
+        "treffer": [
+          "^öl",
+          "motoröl",
+          "schmieröl",
+          "kolbenring",
+          "ventilschaft",
+          "ventilführung",
+          "turbolader"
+        ]
+      },
+      {
+        "label": "Schwarz: unvollständige Verbrennung",
+        "farbe": [
+          "^schwarz",
+          "^schwaz",
+          "^black"
+        ],
+        "treffer": [
+          "unvollständig",
+          "schlechte verbrennung",
+          "verbrennung",
+          "luftmangel",
+          "zu wenig luft",
+          "überlast",
+          "^ruß",
+          "^russ",
+          "luftfilter",
+          "einspritz",
+          "zu viel treibstoff",
+          "zu viel diesel",
+          "überfett",
+          "fettes gemisch"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "f25",
+    "nummer": 25,
+    "frage": "Was versteht man unter dem Verwarpen eines Schiffes?",
+    "loesung": [
+      "Beim Verwarpen wird ein Schiff mithilfe eines Warpankers und einer Leine langsam verholt."
+    ],
+    "hinweis": "Man bringt etwas aus und holt sich daran heran.",
+    "mindestanzahl": 2,
+    "elemente": [
+      {
+        "label": "Warpanker",
+        "pflicht": true,
+        "treffer": [
+          "anker",
+          "^warp",
+          "kedge",
+          "festpunkt",
+          "poller",
+          "boje",
+          "dalben"
+        ]
+      },
+      {
+        "label": "Leine",
+        "treffer": [
+          "leine",
+          "^tampen",
+          "trosse",
+          "=seil",
+          "=tau",
+          "kette",
+          "festmacher"
+        ]
+      },
+      {
+        "label": "Schiff langsam verholen",
+        "treffer": [
+          "verhol",
+          "heranziehen",
+          "ziehen",
+          "holen",
+          "^winsch",
+          "winde",
+          "spill",
+          "verlegen",
+          "bewegen",
+          "versetzen",
+          "hieven",
+          "langsam"
+        ]
+      }
+    ]
+  }
+]
+</script>
+<script>
+/* ==========================================================================
+   SSS Seemannschaft 25 Fragen
+   Teil 1: Bewertung freier Antworten (ohne DOM-Zugriff)
+   Teil 2: Ablauf der Runde und Oberfläche
+   ========================================================================== */
+"use strict";
+
+/* ---------------------------------------------------------------------------
+   Teil 1: Bewertung
+   --------------------------------------------------------------------------- */
+const Bewertung = (() => {
+  const VERNEINUNG = new Set(["nicht", "kein", "keine", "keinen", "keiner", "keinem", "keines", "nie", "niemals"]);
+  const FARBFENSTER = 10; // Wörter nach einer Farbe, in denen die Ursache stehen muss
+
+  // Kleinschreibung, Umlaute falten, ß -> ss, übrige Akzente entfernen.
+  function falten(s) {
+    return String(s).toLowerCase()
+      .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+      .normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+
+  // Text -> Abschnitte (getrennt an Satz- und Aufzählungsgrenzen) -> Wörter
+  function zerlegen(text) {
+    return falten(text)
+      .split(/[.!?;,\n\r•]+/)
+      .map((teil) => teil.replace(/[^a-z0-9]+/g, " ").trim())
+      .filter(Boolean)
+      .map((teil) => teil.split(" "));
+  }
+
+  // Erlaubte Tippfehler je Begriffslänge
+  function toleranz(n) {
+    if (n < 7) return 0;
+    if (n <= 9) return 1;
+    return 2;
+  }
+
+  function levenshtein(a, b) {
+    if (a === b) return 0;
+    const m = a.length, n = b.length;
+    if (!m) return n;
+    if (!n) return m;
+    let vor = new Array(n + 1);
+    for (let j = 0; j <= n; j++) vor[j] = j;
+    for (let i = 1; i <= m; i++) {
+      const akt = [i];
+      for (let j = 1; j <= n; j++) {
+        akt[j] = Math.min(vor[j] + 1, akt[j - 1] + 1, vor[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      vor = akt;
+    }
+    return vor[n];
+  }
+
+  // Kleinster Abstand zwischen Begriff p und einem Teilstück von w, das mit
+  // demselben Buchstaben beginnt wie p. Damit greifen Tippfehler im Wortinneren
+  // und am Ende, aber „schalten“ wird nicht zu „abschalten“.
+  function teilAbstand(p, w, tol) {
+    if (w.includes(p)) return 0;
+    let best = Infinity;
+    for (let start = 0; start < w.length; start++) {
+      if (w[start] !== p[0]) continue;
+      const rest = w.slice(start);
+      // DP: Abstand p zu einem Präfix von rest
+      let vor = new Array(rest.length + 1);
+      for (let j = 0; j <= rest.length; j++) vor[j] = j;
+      for (let i = 1; i <= p.length; i++) {
+        const akt = [i];
+        for (let j = 1; j <= rest.length; j++) {
+          akt[j] = Math.min(vor[j] + 1, akt[j - 1] + 1, vor[j - 1] + (p[i - 1] === rest[j - 1] ? 0 : 1));
+        }
+        vor = akt;
+      }
+      for (let j = Math.max(1, p.length - tol); j <= rest.length; j++) best = Math.min(best, vor[j]);
+      if (best === 0) break;
+    }
+    return best;
+  }
+
+  // Ein Suchwort mit optionalem Steuerzeichen:
+  //   =wort  ganzes Wort exakt
+  //   ^wort  Wortanfang exakt
+  //   ~wort  ganzes Wort mit Tippfehler-Toleranz
+  //   #a-b   Zahl im Bereich a bis b
+  //   wort   Standard: unter 4 Zeichen exakt, 4 Zeichen Wortanfang,
+  //          5–6 Zeichen als Wortteil, ab 7 Zeichen Wortteil mit Toleranz
+  function wortSpec(roh) {
+    const z = roh[0];
+    if (z === "#") {
+      const [a, b] = roh.slice(1).split("-").map(Number);
+      return { art: "#", a, b };
+    }
+    if (z === "=" || z === "^" || z === "~") {
+      return { art: z, s: falten(roh.slice(1)).replace(/[^a-z0-9]/g, "") };
+    }
+    return { art: "", s: falten(roh).replace(/[^a-z0-9]/g, "") };
+  }
+
+  function wortTrifft(spec, w) {
+    const s = spec.s;
+    switch (spec.art) {
+      case "#": return /^\d+$/.test(w) && +w >= spec.a && +w <= spec.b;
+      case "=": return w === s;
+      case "^": return w.startsWith(s);
+      case "~": return levenshtein(w, s) <= Math.max(toleranz(s.length), s.length >= 5 ? 1 : 0);
+      default:
+        if (s.length < 4) return w === s;
+        if (s.length === 4) return w.startsWith(s);
+        if (s.length <= 6) return w.includes(s);
+        return teilAbstand(s, w, toleranz(s.length)) <= toleranz(s.length);
+    }
+  }
+
+  // Treffer vorbereiten: "rettungs ring" -> [{...},{...}]
+  function trefferSpec(roh) {
+    const marke = /^[=^~]/.test(roh) ? roh[0] : "";
+    if (roh[0] === "#") return [wortSpec(roh)];
+    const rest = marke ? roh.slice(1) : roh;
+    const woerter = falten(rest).replace(/[^a-z0-9^=~ ]+/g, " ").trim().split(/\s+/);
+    // Steuerzeichen am Anfang gilt für alle Wörter des Treffers
+    return woerter.map((w) => wortSpec(marke + w));
+  }
+
+  // Sucht einen Treffer in einem Abschnitt. Liefert Startindex oder -1.
+  function sucheInAbschnitt(specs, toks, verneinend, ab = 0) {
+    for (let i = ab; i < toks.length; i++) {
+      let pos = -1;
+      if (specs.length === 1) {
+        if (wortTrifft(specs[0], toks[i])) pos = i;
+        // Getrennt geschriebenes Kompositum: „rettungs ring“
+        else if (!specs[0].art && specs[0].s && specs[0].s.length >= 7 && i + 1 < toks.length &&
+                 wortTrifft(specs[0], toks[i] + toks[i + 1])) pos = i;
+      } else if (wortTrifft(specs[0], toks[i])) {
+        let k = i, ok = true;
+        for (let t = 1; t < specs.length; t++) {
+          let gefunden = -1;
+          for (let j = k + 1; j <= Math.min(toks.length - 1, k + 3); j++) {
+            if (wortTrifft(specs[t], toks[j])) { gefunden = j; break; }
+          }
+          if (gefunden < 0) { ok = false; break; }
+          k = gefunden;
+        }
+        if (ok) pos = i;
+      }
+      if (pos < 0) continue;
+      if (!verneinend && istVerneint(toks, pos)) continue;
+      return pos;
+    }
+    return -1;
+  }
+
+  function istVerneint(toks, pos) {
+    const v1 = toks[pos - 1], v2 = toks[pos - 2];
+    if (v1 && VERNEINUNG.has(v1)) return true;
+    if (v2 && VERNEINUNG.has(v2) && v1 !== "nur") return true;
+    return false;
+  }
+
+  function elementErkannt(el, abschnitte) {
+    if (el.farbe) return farbpaarErkannt(el, abschnitte);
+    for (const roh of el.treffer) {
+      const specs = trefferSpec(roh);
+      for (const toks of abschnitte) {
+        if (sucheInAbschnitt(specs, toks, !!el.verneinend) >= 0) return true;
+      }
+    }
+    return false;
+  }
+
+  // Frage 24: Ursache muss nach der Farbe stehen, vor der nächsten Farbe.
+  function farbpaarErkannt(el, abschnitte, alleFarben) {
+    const toks = abschnitte.flat();
+    const farbSpecs = (alleFarben || el._alleFarben || el.farbe).map(wortSpec);
+    const eigene = el.farbe.map(wortSpec);
+    const ursachen = el.treffer.map(trefferSpec);
+    for (let i = 0; i < toks.length; i++) {
+      if (!eigene.some((f) => wortTrifft(f, toks[i]))) continue;
+      let ende = Math.min(toks.length, i + 1 + FARBFENSTER);
+      for (let j = i + 1; j < ende; j++) {
+        if (farbSpecs.some((f) => wortTrifft(f, toks[j]))) { ende = j; break; }
+      }
+      const fenster = toks.slice(i + 1, ende);
+      if (ursachen.some((specs) => sucheInAbschnitt(specs, fenster, true) >= 0)) return true;
+    }
+    return false;
+  }
+
+  function vorbereiten(fragen) {
+    for (const f of fragen) {
+      const farben = f.elemente.filter((e) => e.farbe).flatMap((e) => e.farbe);
+      for (const e of f.elemente) if (e.farbe) e._alleFarben = farben;
+    }
+    return fragen;
+  }
+
+  // Ergebnis: { stufe: "richtig"|"teilweise"|"falsch", erkannt: [bool], anzahl, soll, fehlendePflicht: [label] }
+  function bewerten(frage, antwort) {
+    const abschnitte = zerlegen(antwort);
+    const erkannt = frage.elemente.map((el) => elementErkannt(el, abschnitte));
+    const anzahl = erkannt.filter(Boolean).length;
+    const soll = frage.mindestanzahl;
+    const fehlendePflicht = frage.elemente.filter((el, i) => el.pflicht && !erkannt[i]).map((el) => el.label);
+    let stufe = "falsch";
+    if (anzahl >= soll && fehlendePflicht.length === 0) stufe = "richtig";
+    else if (anzahl > 0 && anzahl >= Math.ceil(soll / 2)) stufe = "teilweise";
+    return { stufe, erkannt, anzahl, soll, gesamt: frage.elemente.length, fehlendePflicht };
+  }
+
+  return { bewerten, vorbereiten, falten, zerlegen, levenshtein };
+})();
+
+/* ---------------------------------------------------------------------------
+   Teil 2: Ablauf und Oberfläche
+   --------------------------------------------------------------------------- */
+const FRAGEN = Bewertung.vorbereiten(JSON.parse(document.getElementById("fragen-daten").textContent));
+const NACH_ID = Object.fromEntries(FRAGEN.map((f) => [f.id, f]));
+const GROESSEN = [10, 15, 20, FRAGEN.length];
+const MAX_WDH = 2;      // höchstens zwei Wiederholungen je Frage
+const ABSTAND = 3;      // frühestens nach drei anderen Fragen
+
+const $ = (id) => document.getElementById(id);
+const IST_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+
+/* ---------- Speicher mit Ersatz, falls blockiert ---------- */
+const speicher = (() => {
+  const ersatz = {};
+  return {
+    lesen(k) { try { return localStorage.getItem(k); } catch { return ersatz[k] ?? null; } },
+    schreiben(k, v) { try { localStorage.setItem(k, v); } catch { ersatz[k] = v; } },
+  };
+})();
+
+let groesse = (() => {
+  const g = parseInt(speicher.lesen("sss25.groesse"), 10);
+  return GROESSEN.includes(g) ? g : 10;
+})();
+
+/* ---------- Zustand ---------- */
+let runde = null;     // aktuelle Runde
+let aktuell = null;   // { id, hinweis, ergebnis, ausgang, abgeschlossen }
+let vorListe = "start";
+
+function mischen(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function rundeStarten(ids) {
+  const auswahl = mischen(ids);
+  runde = {
+    ids: auswahl,
+    queue: auswahl.slice(),
+    gezeigt: 0,          // Zahl erstmals gestellter Fragen
+    vorzeitig: false,
+    st: Object.fromEntries(auswahl.map((id) => [id, {
+      wdh: 0, erst: null, erstHinweis: false, final: null, letzteAntwort: "", versuche: 0,
+    }])),
+  };
+  zeige("frage");
+  naechsteFrage();
+}
+
+function naechsteFrage() {
+  if (!runde.queue.length) return ergebnisZeigen();
+  const id = runde.queue.shift();
+  const s = runde.st[id];
+  if (s.versuche === 0) runde.gezeigt++;
+  aktuell = { id, hinweis: false, ergebnis: null, ausgang: null, abgeschlossen: false };
+  frageRendern();
+}
+
+function erledigt() {
+  return runde.ids.filter((id) => runde.st[id].final !== null).length;
+}
+
+// Ausgang einer Frage verbuchen: richtig | teilweise | falsch | geloest | uebersprungen
+function verbuchen(ausgang) {
+  const s = runde.st[aktuell.id];
+  s.versuche++;
+  if (s.erst === null) { s.erst = ausgang; s.erstHinweis = aktuell.hinweis; }
+  if (ausgang === "richtig") {
+    s.final = "richtig";
+    return "fertig";
+  }
+  if (s.wdh < MAX_WDH) {
+    s.wdh++;
+    runde.queue.splice(Math.min(ABSTAND, runde.queue.length), 0, aktuell.id);
+    return "wieder";
+  }
+  s.final = "offen";
+  return "offen";
+}
+
+function kommtWieder() {
+  return runde.st[aktuell.id].wdh < MAX_WDH;
+}
+
+/* ---------- Ansichten ---------- */
+const SCREENS = ["start", "frage", "ergebnis", "liste"];
+let screenJetzt = "start";
+
+function zeige(name) {
+  screenJetzt = name;
+  for (const s of SCREENS) $("screen-" + s).hidden = s !== name;
+  $("btn-zurueck").hidden = name === "start";
+  $("btn-liste").hidden = name === "liste" || name === "frage";
+  if (name === "start") $("crumb").textContent = "25 Fragen";
+  if (name === "liste") $("crumb").textContent = "Alle Fragen";
+  if (name === "ergebnis") $("crumb").textContent = "Ergebnis";
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Start ---------- */
+function startRendern() {
+  const box = $("groesse-choices");
+  box.innerHTML = "";
+  for (const g of GROESSEN) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "choice";
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", String(g === groesse));
+    b.tabIndex = g === groesse ? 0 : -1;
+    const alle = g === FRAGEN.length;
+    b.innerHTML = `<span class="choice-title">${alle ? "Alle" : g}</span><span class="choice-sub">${alle ? g + " Fragen" : "Fragen"}</span>`;
+    b.setAttribute("aria-label", alle ? `Alle ${g} Fragen` : `${g} Fragen`);
+    b.addEventListener("click", () => { groesse = g; speicher.schreiben("sss25.groesse", String(g)); startRendern(); box.querySelector('[aria-checked="true"]').focus(); });
+    box.appendChild(b);
+  }
+}
+// Pfeiltasten in der Radiogruppe
+$("groesse-choices").addEventListener("keydown", (e) => {
+  const i = GROESSEN.indexOf(groesse);
+  let n = null;
+  if (e.key === "ArrowRight" || e.key === "ArrowDown") n = (i + 1) % GROESSEN.length;
+  if (e.key === "ArrowLeft" || e.key === "ArrowUp") n = (i - 1 + GROESSEN.length) % GROESSEN.length;
+  if (n === null) return;
+  e.preventDefault();
+  groesse = GROESSEN[n];
+  speicher.schreiben("sss25.groesse", String(groesse));
+  startRendern();
+  $("groesse-choices").querySelector('[aria-checked="true"]').focus();
+});
+
+/* ---------- Frage ---------- */
+function frageRendern() {
+  const f = NACH_ID[aktuell.id];
+  const s = runde.st[aktuell.id];
+  const n = runde.ids.length;
+  const label = s.versuche === 0
+    ? `Frage ${runde.gezeigt} von ${n} · Nr. ${f.nummer}`
+    : `<span class="wdh">Wiederholung ${s.wdh} von ${MAX_WDH}</span> · Nr. ${f.nummer}`;
+  $("frage-label").innerHTML = label;
+  $("frage-text").textContent = f.frage;
+  const anteil = Math.round((erledigt() / n) * 100);
+  $("meter-fill").style.width = anteil + "%";
+  $("meter").setAttribute("aria-valuenow", String(anteil));
+  $("crumb").textContent = `${erledigt()} von ${n} erledigt`;
+
+  const ta = $("antwort");
+  ta.value = "";
+  ta.readOnly = false;
+  ta.rows = 6;
+  ta.style.height = "";
+  ta.placeholder = "Antwort frei formulieren. Stichworte genügen, Fachbegriffe zählen.";
+  $("kbd-hint").hidden = !window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  $("kbd-hint").textContent = (IST_MAC ? "Cmd" : "Strg") + " + Enter prüft";
+  $("hinweis-note").hidden = true;
+  $("btn-hinweis").disabled = false;
+  $("btn-pruefen").disabled = true;
+  $("frage-aktionen").hidden = false;
+  $("auswertung").hidden = true;
+
+  // Fokus: auf Geräten mit Tastatur direkt ins Antwortfeld
+  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) ta.focus({ preventScroll: true });
+  else $("frage-text").focus({ preventScroll: true });
+  window.scrollTo(0, 0);
+}
+
+function hinweisZeigen() {
+  const f = NACH_ID[aktuell.id];
+  aktuell.hinweis = true;
+  $("hinweis-text").textContent = f.hinweis;
+  $("hinweis-note").hidden = false;
+  $("btn-hinweis").disabled = true;
+  $("antwort").focus({ preventScroll: true });
+}
+
+function pruefen() {
+  const text = $("antwort").value.trim();
+  if (!text || aktuell.abgeschlossen) return;
+  const f = NACH_ID[aktuell.id];
+  aktuell.ergebnis = Bewertung.bewerten(f, text);
+  aktuell.ausgang = aktuell.ergebnis.stufe;
+  runde.st[aktuell.id].letzteAntwort = text;
+  auswertungZeigen();
+}
+
+function loesen() {
+  if (aktuell.abgeschlossen) return;
+  aktuell.ergebnis = null;
+  aktuell.ausgang = "geloest";
+  const text = $("antwort").value.trim();
+  if (text) runde.st[aktuell.id].letzteAntwort = text;
+  auswertungZeigen();
+}
+
+function ueberspringen() {
+  if (aktuell.abgeschlossen) return;
+  aktuell.abgeschlossen = true;
+  const wieder = kommtWieder();
+  verbuchen("uebersprungen");
+  toast(wieder ? "Übersprungen – kommt später nochmals" : "Übersprungen – bleibt offen");
+  naechsteFrage();
+}
+
+const KOPF = {
+  richtig: "Richtig",
+  teilweise: "Teilweise richtig",
+  falsch: "Falsch",
+  geloest: "Lösung angezeigt",
+};
+const KLASSE = { richtig: "ok", teilweise: "skip", falsch: "no", geloest: "skip" };
+
+function auswertungZeigen() {
+  const f = NACH_ID[aktuell.id];
+  const e = aktuell.ergebnis;
+  const ausgang = aktuell.ausgang;
+
+  const ta = $("antwort");
+  ta.readOnly = true;
+  if (!ta.value.trim()) { ta.rows = 1; ta.placeholder = "Keine Antwort eingegeben"; }
+  $("kbd-hint").hidden = true;
+  $("frage-aktionen").hidden = true;
+  $("auswertung").hidden = false;
+  ta.rows = 1;
+  ta.style.height = "auto";
+  ta.style.height = (ta.scrollHeight + 2) + "px";
+
+  verdictSetzen(ausgang);
+
+  // Chips
+  const chips = $("element-chips");
+  chips.innerHTML = "";
+  f.elemente.forEach((el, i) => {
+    const c = document.createElement("span");
+    const treffer = e && e.erkannt[i];
+    c.className = "chip" + (e ? (treffer ? " hit" : " fehlt") : "");
+    c.innerHTML = `<i aria-hidden="true">${e ? (treffer ? "✓" : "·") : "·"}</i>`;
+    c.appendChild(document.createTextNode(el.label));
+    if (el.pflicht) {
+      const p = document.createElement("span");
+      p.className = "pf";
+      p.textContent = "★";
+      p.title = "Pflichtpunkt";
+      c.appendChild(p);
+    }
+    c.setAttribute("aria-label", `${el.label}${el.pflicht ? ", Pflichtpunkt" : ""}${e ? (treffer ? ", erkannt" : ", fehlt") : ""}`);
+    chips.appendChild(c);
+  });
+
+  loesungRendern($("loesung-box"), f);
+  const anm = $("loesung-anmerkung");
+  anm.hidden = !f.anmerkung;
+  anm.innerHTML = f.anmerkung ? `<b>Anmerkung:</b> ` : "";
+  if (f.anmerkung) anm.appendChild(document.createTextNode(f.anmerkung));
+
+  $("btn-weiter").textContent = runde.queue.length || kommtWieder() && ausgang !== "richtig" ? "Weiter" : "Zum Ergebnis";
+  $("verdict-head").focus({ preventScroll: true });
+  $("verdict").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+
+function verdictSetzen(ausgang) {
+  const e = aktuell.ergebnis;
+  $("verdict").className = "verdict " + KLASSE[ausgang];
+  $("verdict-head").textContent = KOPF[ausgang] + (ausgang === "richtig" && aktuell.hinweis ? " (mit Hinweis)" : "");
+  const sub = $("verdict-sub");
+  sub.innerHTML = "";
+  const wieder = kommtWieder();
+  if (aktuell.ueberstimmt) {
+    sub.textContent = "Von Ihnen als richtig gewertet.";
+  } else if (e) {
+    sub.innerHTML = `<b>${e.anzahl} von ${e.gesamt}</b> Schlüsselelementen erkannt` +
+      (e.anzahl < e.soll && e.soll < e.gesamt ? ` (nötig: ${e.soll})` : "") + ".";
+    if (e.fehlendePflicht.length && e.anzahl > 0) {
+      sub.appendChild(document.createTextNode(" Fehlt: " + e.fehlendePflicht.join(", ") + "."));
+    }
+    if (ausgang !== "richtig") sub.appendChild(document.createTextNode(wieder ? " Kommt später nochmals." : " Bleibt offen."));
+  } else {
+    sub.textContent = wieder ? "Die Frage kommt später nochmals." : "Die Frage bleibt offen.";
+  }
+  $("btn-doch").hidden = !(e && (ausgang === "teilweise" || ausgang === "falsch"));
+}
+
+function dochRichtig() {
+  aktuell.ausgang = "richtig";
+  aktuell.ueberstimmt = true;
+  verdictSetzen("richtig");
+  $("btn-weiter").textContent = runde.queue.length ? "Weiter" : "Zum Ergebnis";
+  $("verdict-head").focus({ preventScroll: true });
+}
+
+function weiter() {
+  if (aktuell.abgeschlossen) return;
+  aktuell.abgeschlossen = true;
+  verbuchen(aktuell.ausgang);
+  naechsteFrage();
+}
+
+function loesungRendern(box, f) {
+  box.innerHTML = "";
+  if (f.loesung.length > 1) {
+    const ul = document.createElement("ul");
+    for (const z of f.loesung) {
+      const li = document.createElement("li");
+      li.textContent = z;
+      ul.appendChild(li);
+    }
+    box.appendChild(ul);
+  } else {
+    const p = document.createElement("p");
+    p.textContent = f.loesung[0];
+    box.appendChild(p);
+  }
+}
+
+/* ---------- Ergebnis ---------- */
+function ergebnisZeigen() {
+  zeige("ergebnis");
+  const gestellt = runde.ids.filter((id) => runde.st[id].erst !== null);
+  const n = gestellt.length;
+  const erstRichtig = gestellt.filter((id) => runde.st[id].erst === "richtig");
+  const mitHinweis = erstRichtig.filter((id) => runde.st[id].erstHinweis).length;
+  const spaeter = gestellt.filter((id) => runde.st[id].erst !== "richtig" && runde.st[id].final === "richtig");
+  const offen = gestellt.filter((id) => runde.st[id].final !== "richtig");
+
+  $("ergebnis-eyebrow").textContent = runde.vorzeitig
+    ? `Vorzeitig beendet · ${n} von ${runde.ids.length} Fragen gestellt`
+    : "Runde beendet";
+  $("ergebnis-score").textContent = n ? Math.round((erstRichtig.length / n) * 100) + " %" : "–";
+  $("ergebnis-zahl").textContent = `${erstRichtig.length}/${n}`;
+
+  const facts = $("ergebnis-facts");
+  facts.innerHTML = "";
+  const fakt = (zahl, text) => {
+    const s = document.createElement("span");
+    s.className = "fact";
+    s.innerHTML = `<b>${zahl}</b>`;
+    s.appendChild(document.createTextNode(text));
+    facts.appendChild(s);
+  };
+  if (mitHinweis) fakt(mitHinweis, "davon mit Hinweis");
+  if (spaeter.length) fakt(spaeter.length, "nach Wiederholung gelöst");
+  if (offen.length) fakt(offen.length, "offen");
+  if (!spaeter.length && !offen.length && n) fakt(n, "alle beim ersten Mal");
+
+  const liste = $("misslist");
+  liste.innerHTML = "";
+  const nachzuarbeiten = [...offen, ...spaeter].sort((a, b) => NACH_ID[a].nummer - NACH_ID[b].nummer);
+  $("miss-eyebrow").hidden = !nachzuarbeiten.length;
+  for (const id of nachzuarbeiten) {
+    const f = NACH_ID[id];
+    const s = runde.st[id];
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "miss" + (s.final === "richtig" ? " later" : "");
+    b.innerHTML = `<b>${f.nummer}</b>`;
+    const span = document.createElement("span");
+    span.textContent = f.frage;
+    const small = document.createElement("small");
+    small.textContent = s.final === "richtig"
+      ? `nach ${s.versuche - 1}. Wiederholung gelöst`
+      : (s.final === "offen" ? "offen nach " + s.versuche + " Versuchen" : "nicht abgeschlossen");
+    span.appendChild(small);
+    b.appendChild(span);
+    b.addEventListener("click", () => loesungsPanel(id, true));
+    liste.appendChild(b);
+  }
+  $("btn-fehler").hidden = !nachzuarbeiten.length;
+  $("btn-fehler").textContent = `Fehler nochmals üben (${nachzuarbeiten.length})`;
+  runde.fehler = nachzuarbeiten;
+}
+
+/* ---------- Alle Fragen ---------- */
+function listeRendern() {
+  const q = Bewertung.falten($("suche").value.trim());
+  const box = $("such-treffer");
+  box.innerHTML = "";
+  const treffer = FRAGEN.filter((f) => !q || Bewertung.falten(f.frage + " " + f.loesung.join(" ")).includes(q));
+  $("such-zahl").textContent = q ? `${treffer.length} von ${FRAGEN.length} Fragen` : `${FRAGEN.length} Fragen`;
+  for (const f of treffer) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "such-zeile";
+    b.innerHTML = `<b>${f.nummer}</b>`;
+    const s = document.createElement("span");
+    s.textContent = f.frage;
+    b.appendChild(s);
+    b.addEventListener("click", () => loesungsPanel(f.id, false));
+    box.appendChild(b);
+  }
+}
+
+function listeOeffnen() {
+  if (screenJetzt === "frage") { toast("Während der Runde nicht verfügbar"); return; }
+  vorListe = screenJetzt === "liste" ? vorListe : screenJetzt;
+  zeige("liste");
+  listeRendern();
+}
+
+/* ---------- Panels ---------- */
+let letzterFokus = null;
+
+function panelOeffnen(id) {
+  letzterFokus = document.activeElement;
+  const p = $(id);
+  p.hidden = false;
+  const ziel = p.querySelector(".sheet-body button, .sheet-head .icon-btn") || p.querySelector("[data-schliessen]");
+  setTimeout(() => ziel && ziel.focus(), 30);
+}
+function panelSchliessen(p) {
+  p.hidden = true;
+  if (letzterFokus && document.contains(letzterFokus)) letzterFokus.focus({ preventScroll: true });
+}
+document.querySelectorAll(".sheet-wrap").forEach((p) => {
+  p.addEventListener("click", (e) => { if (e.target.closest("[data-schliessen]")) panelSchliessen(p); });
+});
+
+function loesungsPanel(id, mitAntwort) {
+  const f = NACH_ID[id];
+  $("sheet-loesung-nr").textContent = `Frage ${f.nummer}`;
+  $("sheet-loesung-titel").textContent = f.frage;
+  const body = $("sheet-loesung-body");
+  body.innerHTML = "";
+  if (mitAntwort && runde) {
+    const e = document.createElement("p");
+    e.className = "eyebrow";
+    e.textContent = "Ihre letzte Antwort";
+    body.appendChild(e);
+    const a = document.createElement("div");
+    const t = runde.st[id] && runde.st[id].letzteAntwort;
+    a.className = "eigene" + (t ? "" : " leer");
+    a.textContent = t || "Keine Antwort eingegeben";
+    body.appendChild(a);
+  }
+  const e2 = document.createElement("p");
+  e2.className = "eyebrow";
+  e2.textContent = "Musterlösung";
+  body.appendChild(e2);
+  const box = document.createElement("div");
+  box.className = "loesung";
+  loesungRendern(box, f);
+  body.appendChild(box);
+  if (f.anmerkung) {
+    const anm = document.createElement("p");
+    anm.className = "anmerkung";
+    anm.innerHTML = "<b>Anmerkung:</b> ";
+    anm.appendChild(document.createTextNode(f.anmerkung));
+    body.appendChild(anm);
+  }
+  const e3 = document.createElement("p");
+  e3.className = "eyebrow sub-eyebrow";
+  e3.textContent = "Schlüsselelemente";
+  body.appendChild(e3);
+  const chips = document.createElement("div");
+  chips.className = "chips";
+  for (const el of f.elemente) {
+    const c = document.createElement("span");
+    c.className = "chip";
+    c.textContent = el.label;
+    if (el.pflicht) {
+      const p = document.createElement("span");
+      p.className = "pf";
+      p.textContent = "★";
+      c.appendChild(p);
+    }
+    chips.appendChild(c);
+  }
+  body.appendChild(chips);
+  panelOeffnen("sheet-loesung");
+}
+
+/* ---------- Toast ---------- */
+let toastZeit = null;
+function toast(text) {
+  const t = $("toast");
+  t.textContent = text;
+  t.hidden = false;
+  clearTimeout(toastZeit);
+  toastZeit = setTimeout(() => { t.hidden = true; }, 2200);
+}
+
+/* ---------- Ereignisse ---------- */
+$("btn-start").addEventListener("click", () => rundeStarten(mischen(FRAGEN.map((f) => f.id)).slice(0, groesse)));
+$("btn-liste").addEventListener("click", listeOeffnen);
+$("btn-liste-2").addEventListener("click", listeOeffnen);
+$("btn-info").addEventListener("click", () => panelOeffnen("sheet-info"));
+$("btn-info-2").addEventListener("click", () => panelOeffnen("sheet-info"));
+$("suche").addEventListener("input", listeRendern);
+
+$("antwort").addEventListener("input", () => { $("btn-pruefen").disabled = !$("antwort").value.trim(); });
+$("btn-pruefen").addEventListener("click", pruefen);
+$("btn-hinweis").addEventListener("click", hinweisZeigen);
+$("btn-loesen").addEventListener("click", loesen);
+$("btn-ueberspringen").addEventListener("click", ueberspringen);
+$("btn-doch").addEventListener("click", dochRichtig);
+$("btn-weiter").addEventListener("click", weiter);
+
+$("btn-fehler").addEventListener("click", () => rundeStarten(runde.fehler));
+$("btn-neu").addEventListener("click", () => rundeStarten(mischen(FRAGEN.map((f) => f.id)).slice(0, groesse)));
+$("btn-zum-start").addEventListener("click", () => { zeige("start"); startRendern(); });
+
+$("btn-zurueck").addEventListener("click", () => {
+  if (screenJetzt === "frage") return panelOeffnen("sheet-beenden");
+  if (screenJetzt === "liste") {
+    if (vorListe === "ergebnis" && runde) return zeige("ergebnis");
+    zeige("start"); return startRendern();
+  }
+  zeige("start");
+  startRendern();
+});
+$("btn-beenden-ja").addEventListener("click", () => {
+  $("sheet-beenden").hidden = true;
+  runde.vorzeitig = runde.queue.length > 0 || !aktuell.abgeschlossen;
+  // Eine bereits ausgewertete, aber noch nicht bestätigte Frage zählt mit.
+  if (!aktuell.abgeschlossen && aktuell.ausgang) { aktuell.abgeschlossen = true; verbuchen(aktuell.ausgang); }
+  runde.queue = [];
+  ergebnisZeigen();
+});
+
+document.addEventListener("keydown", (e) => {
+  const offen = [...document.querySelectorAll(".sheet-wrap")].find((p) => !p.hidden);
+  if (e.key === "Escape" && offen) { panelSchliessen(offen); return; }
+  if (offen) return;
+  if (screenJetzt !== "frage") return;
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    if (!$("auswertung").hidden) weiter();
+    else pruefen();
+  }
+});
+
+/* ---------- Offlinebetrieb ---------- */
+function offlineStatus(text) { $("offline-status").textContent = text; }
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  navigator.serviceWorker.register("sw.js").then(() => {
+    offlineStatus("Offline verfügbar: Die App ist auf diesem Gerät gespeichert und startet auch ohne Netz.");
+  }).catch(() => offlineStatus("Offlinespeicher nicht verfügbar. Die App läuft, braucht aber beim Öffnen eine Verbindung."));
+} else {
+  offlineStatus("Offline-Installation ist nur über eine Webadresse (z. B. GitHub Pages) möglich, nicht beim Öffnen als Datei.");
+}
+
+/* ---------- Start ---------- */
+startRendern();
+window.__sss25 = { Bewertung, FRAGEN };
+</script>
+</body>
+</html>
