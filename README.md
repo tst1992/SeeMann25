@@ -3,8 +3,8 @@
 Trainer für die 25 häufigsten Prüfungsfragen im Fach **Seemannschaft** des
 Sportseeschifferscheins. Die Fragen kommen in zufälliger Reihenfolge, die
 Antwort wird frei formuliert und gegen feste Schlüsselelemente geprüft.
-Danach erscheint immer die Musterlösung. Falsche Antworten kommen in derselben
-Runde nochmals, höchstens zweimal.
+Danach erscheint immer die Musterlösung.
+Falsche Antworten kommen in derselben Runde nochmals, höchstens zweimal.
 
 Die App läuft ohne Server, ohne Anmeldung und nach dem ersten Aufruf auch
 ohne Netz. Gestaltung übernommen aus dem SSS-Trainer Seemannschaft.
