@@ -110,6 +110,12 @@ drei anderen Fragen wieder gestellt, höchstens zweimal. Danach bleibt sie
 offen und erscheint im Ergebnis. „Fehler nochmals üben“ startet eine Runde nur
 mit diesen Fragen.
 
+Richtig beantwortet: Mit **„Nochmals fragen“** kommt die Frage nach drei bis
+sechs anderen Fragen (zufällig) nochmals, als „Wiederholung auf Wunsch“. Sind
+weniger Fragen übrig, kommt sie am Ende der Runde. Das geht beliebig oft. Die
+Frage zählt weiter als beim ersten Mal richtig. Wird sie bei der Wiederholung
+nicht richtig beantwortet, gelten die normalen Regeln oben.
+
 ## Datengrundlage
 
 „SSS Seemannschaft – 25 häufigsten Fragen“, © SegelnAG. Fragen und

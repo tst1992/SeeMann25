@@ -142,6 +142,9 @@ main{max-width:640px;margin:0 auto;padding:20px 16px 96px}
 .ghost.danger:hover{color:var(--port);border-color:var(--port)}
 .ghost.brass{color:var(--brass);border-color:rgba(216,165,68,.45)}
 .ghost.brass:hover{border-color:var(--brass);color:var(--brass)}
+.ghost.nochmals{margin-top:22px}
+.ghost.nochmals[aria-pressed="true"]{color:var(--stbd);border-color:var(--stbd);background:var(--stbd-dim)}
+.ghost.nochmals[aria-pressed="true"]::before{content:"✓ "}
 .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
 .textlink{background:none;border:0;padding:6px 0;margin-top:14px;color:var(--fog-dim);font:inherit;font-size:.85rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
@@ -392,6 +395,7 @@ input#suche:focus{border-color:var(--stbd);outline:none}
       <div class="loesung" id="loesung-box"></div>
       <p class="anmerkung" id="loesung-anmerkung" hidden></p>
 
+      <button class="ghost nochmals" id="btn-nochmals" type="button" aria-pressed="false" hidden>Nochmals fragen</button>
       <button class="cta" id="btn-weiter" type="button" style="margin-top:22px">Weiter</button>
     </div>
   </section>
@@ -466,6 +470,7 @@ input#suche:focus{border-color:var(--stbd);outline:none}
 
       <p class="help-h">Wiederholung</p>
       <p>Falsch, teilweise, gelöst oder übersprungen: Die Frage kommt nach frühestens drei anderen Fragen wieder, höchstens zweimal. Danach bleibt sie offen und erscheint im Ergebnis.</p>
+      <p>Richtig beantwortet: Mit „Nochmals fragen“ kommt die Frage nach drei bis sechs anderen Fragen nochmals, so oft Sie möchten. Sie zählt weiter als beim ersten Mal richtig. Wird sie bei der Wiederholung nicht richtig beantwortet, gelten die normalen Regeln.</p>
 
       <p class="help-h">Tastatur</p>
       <p>Strg + Enter (Mac: Cmd + Enter) prüft die Antwort und geht danach weiter.</p>
@@ -2103,6 +2108,8 @@ const NACH_ID = Object.fromEntries(FRAGEN.map((f) => [f.id, f]));
 const GROESSEN = [10, 15, 20, FRAGEN.length];
 const MAX_WDH = 2;      // höchstens zwei Wiederholungen je Frage
 const ABSTAND = 3;      // frühestens nach drei anderen Fragen
+const WUNSCH_MIN = 3;   // „Nochmals fragen“: nach 3 bis 6 anderen Fragen
+const WUNSCH_MAX = 6;
 
 const $ = (id) => document.getElementById(id);
 const IST_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
@@ -2143,7 +2150,7 @@ function rundeStarten(ids) {
     gezeigt: 0,          // Zahl erstmals gestellter Fragen
     vorzeitig: false,
     st: Object.fromEntries(auswahl.map((id) => [id, {
-      wdh: 0, erst: null, erstHinweis: false, final: null, letzteAntwort: "", versuche: 0,
+      wdh: 0, erst: null, erstHinweis: false, final: null, letzteAntwort: "", versuche: 0, wunsch: false,
     }])),
   };
   zeige("frage");
@@ -2155,7 +2162,9 @@ function naechsteFrage() {
   const id = runde.queue.shift();
   const s = runde.st[id];
   if (s.versuche === 0) runde.gezeigt++;
-  aktuell = { id, hinweis: false, ergebnis: null, ausgang: null, abgeschlossen: false };
+  aktuell = { id, hinweis: false, ergebnis: null, ausgang: null, abgeschlossen: false,
+              aufWunsch: s.wunsch, nochmals: false };
+  s.wunsch = false;
   frageRendern();
 }
 
@@ -2170,8 +2179,17 @@ function verbuchen(ausgang) {
   if (s.erst === null) { s.erst = ausgang; s.erstHinweis = aktuell.hinweis; }
   if (ausgang === "richtig") {
     s.final = "richtig";
+    if (aktuell.nochmals) {
+      // Auf Wunsch nochmals: nach 3 bis 6 anderen Fragen, sonst ans Ende der Runde
+      const abstand = WUNSCH_MIN + Math.floor(Math.random() * (WUNSCH_MAX - WUNSCH_MIN + 1));
+      runde.queue.splice(Math.min(abstand, runde.queue.length), 0, aktuell.id);
+      s.wunsch = true;
+      return "wieder";
+    }
     return "fertig";
   }
+  // Bei einer Wiederholung auf Wunsch nicht mehr richtig: es gelten die normalen Regeln
+  s.final = null;
   if (s.wdh < MAX_WDH) {
     s.wdh++;
     runde.queue.splice(Math.min(ABSTAND, runde.queue.length), 0, aktuell.id);
@@ -2239,7 +2257,9 @@ function frageRendern() {
   const n = runde.ids.length;
   const label = s.versuche === 0
     ? `Frage ${runde.gezeigt} von ${n} · Nr. ${f.nummer}`
-    : `<span class="wdh">Wiederholung ${s.wdh} von ${MAX_WDH}</span> · Nr. ${f.nummer}`;
+    : aktuell.aufWunsch
+      ? `<span class="wdh">Wiederholung auf Wunsch</span> · Nr. ${f.nummer}`
+      : `<span class="wdh">Wiederholung ${s.wdh} von ${MAX_WDH}</span> · Nr. ${f.nummer}`;
   $("frage-label").innerHTML = label;
   $("frage-text").textContent = f.frage;
   const anteil = Math.round((erledigt() / n) * 100);
@@ -2355,9 +2375,20 @@ function auswertungZeigen() {
   anm.innerHTML = f.anmerkung ? `<b>Anmerkung:</b> ` : "";
   if (f.anmerkung) anm.appendChild(document.createTextNode(f.anmerkung));
 
-  $("btn-weiter").textContent = runde.queue.length || kommtWieder() && ausgang !== "richtig" ? "Weiter" : "Zum Ergebnis";
+  weiterBeschriften();
   $("verdict-head").focus({ preventScroll: true });
   $("verdict").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+
+function weiterBeschriften() {
+  const wieder = aktuell.ausgang === "richtig" ? aktuell.nochmals : kommtWieder();
+  $("btn-weiter").textContent = runde.queue.length || wieder ? "Weiter" : "Zum Ergebnis";
+}
+
+function nochmalsUmschalten() {
+  aktuell.nochmals = !aktuell.nochmals;
+  $("btn-nochmals").setAttribute("aria-pressed", String(aktuell.nochmals));
+  weiterBeschriften();
 }
 
 function verdictSetzen(ausgang) {
@@ -2380,13 +2411,16 @@ function verdictSetzen(ausgang) {
     sub.textContent = wieder ? "Die Frage kommt später nochmals." : "Die Frage bleibt offen.";
   }
   $("btn-doch").hidden = !(e && (ausgang === "teilweise" || ausgang === "falsch"));
+  aktuell.nochmals = false;
+  $("btn-nochmals").setAttribute("aria-pressed", "false");
+  $("btn-nochmals").hidden = ausgang !== "richtig";
 }
 
 function dochRichtig() {
   aktuell.ausgang = "richtig";
   aktuell.ueberstimmt = true;
   verdictSetzen("richtig");
-  $("btn-weiter").textContent = runde.queue.length ? "Weiter" : "Zum Ergebnis";
+  weiterBeschriften();
   $("verdict-head").focus({ preventScroll: true });
 }
 
@@ -2459,7 +2493,7 @@ function ergebnisZeigen() {
     span.textContent = f.frage;
     const small = document.createElement("small");
     small.textContent = s.final === "richtig"
-      ? `nach ${s.versuche - 1}. Wiederholung gelöst`
+      ? `nach ${s.wdh}. Wiederholung gelöst`
       : (s.final === "offen" ? "offen nach " + s.versuche + " Versuchen" : "nicht abgeschlossen");
     span.appendChild(small);
     b.appendChild(span);
@@ -2594,6 +2628,7 @@ $("btn-hinweis").addEventListener("click", hinweisZeigen);
 $("btn-loesen").addEventListener("click", loesen);
 $("btn-ueberspringen").addEventListener("click", ueberspringen);
 $("btn-doch").addEventListener("click", dochRichtig);
+$("btn-nochmals").addEventListener("click", nochmalsUmschalten);
 $("btn-weiter").addEventListener("click", weiter);
 
 $("btn-fehler").addEventListener("click", () => rundeStarten(runde.fehler));
