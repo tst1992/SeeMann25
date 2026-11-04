@@ -7,7 +7,7 @@
    (GitHub Pages) läuft.
    ========================================================================== */
 
-const BESTAND = "sss25-v1";
+const BESTAND = "sss25-v2";
 
 const DATEIEN = [
   "./",
